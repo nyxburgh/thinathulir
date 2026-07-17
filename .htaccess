@@ -1,0 +1,15 @@
+Options -Indexes
+RewriteEngine On
+RewriteBase /thinathulir/
+
+# Block sensitive directories
+RewriteRule ^(\.env|storage|app|config|cron)(/|$) - [F,L]
+
+# Route everything through public/
+RewriteCond %{REQUEST_URI} !^/thinathulir/public/
+RewriteRule ^(.*)$ public/$1 [L]
+
+<IfModule mod_headers.c>
+    Header always unset Permissions-Policy
+    Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=()"
+</IfModule>

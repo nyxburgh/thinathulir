@@ -1,0 +1,11 @@
+Options -Indexes
+RewriteEngine On
+RewriteBase /thinathulir/
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]
+<IfModule mod_headers.c>
+    Header always unset Permissions-Policy
+    Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=()"
+</IfModule>

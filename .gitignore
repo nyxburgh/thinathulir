@@ -1,0 +1,8 @@
+.env
+app/.env
+config/firebase-service-account.json
+config/facebook.json
+config/threads.json
+storage/cache/
+.git.old-backup-*/
+*.zip
