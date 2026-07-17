@@ -318,6 +318,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <?php
 /* ── ALL REQUIRED VARIABLES ── */
 $reader         = \App\Core\Session::get('reader');
+// Shared avatar renderer — reader (== citizen reporter identity) is shown
+// wherever a login/profile indicator is needed (header, drawers, FABs).
+if (!function_exists('tnReaderAvatarHtml')) {
+    function tnReaderAvatarHtml(?array $reader, int $sizePx = 64): string {
+        if (!empty($reader['avatar'])) {
+            return '<img src="' . htmlspecialchars($reader['avatar']) . '?sz=' . $sizePx . '" '
+                 . 'style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block" '
+                 . 'referrerpolicy="no-referrer" alt="' . htmlspecialchars(substr($reader['name'] ?? '', 0, 1)) . '">';
+        }
+        return htmlspecialchars(strtoupper(substr($reader['name'] ?? '', 0, 1)));
+    }
+}
 $siteName       = $siteName ?? 'தினத்துளிர்';
 $currentPath    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $breakingTicker = $breaking ?? [];
@@ -418,29 +430,13 @@ try {
         <button data-lang-btn="en" class="lang-btn">EN</button>
         <button data-lang-btn="hi" class="lang-btn">हि</button>
       </div>
-      <!-- Profile OR Login -->
+      <!-- Profile — login lives in the "Be a Reporter" menu entry / floating pill now -->
       <?php if ($reader): ?>
       <a href="<?= $baseUrl ?>/public/reader/profile" class="nav-user-wrap" title="<?= htmlspecialchars($reader['name']) ?>" style="text-decoration:none">
         <div class="nav-user-avatar nav-user-init" style="overflow:hidden;padding:0">
-          <?php if (!empty($reader['avatar'])): ?>
-          <img src="<?= htmlspecialchars($reader['avatar']) ?>?sz=64"
-               style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block"
-               referrerpolicy="no-referrer" alt="<?= htmlspecialchars(substr($reader['name'],0,1)) ?>">
-          <?php else: ?>
-          <?= strtoupper(substr($reader['name'],0,1)) ?>
-          <?php endif; ?>
+          <?= tnReaderAvatarHtml($reader, 64) ?>
         </div>
       </a>
-      <?php else: ?>
-      <button class="nav-google-btn" data-action="open-modal" title="Sign in with Google">
-        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-        </svg>
-        <span>Login</span>
-      </button>
       <?php endif; ?>
       <!-- ☰ Menu — ALWAYS visible, opens right drawer -->
       <button class="nav-menu-btn" id="navMenuDrawerBtn" title="Menu">☰</button>
@@ -458,24 +454,25 @@ try {
   </div>
   <div class="nav-drawer-body">
 
+    <!-- Reporter / profile indicator — the single login+citizen-reporter entry point -->
+    <?php if ($reader): ?>
+    <a href="<?= $baseUrl ?>/public/reader/profile" class="nav-drawer-link nav-drawer-user-block">
+      <span class="nav-drawer-user-avatar"><?= tnReaderAvatarHtml($reader, 64) ?></span>
+      <span><?= htmlspecialchars($reader['name']) ?></span>
+    </a>
+    <?php else: ?>
+    <a href="<?= $baseUrl ?>/public/join-us" class="nav-drawer-link nav-drawer-reporter-link">📰 நிருபர் ஆக</a>
+    <?php endif; ?>
+
     <!-- All nav categories (populated by JS) -->
     <a href="<?= $baseUrl ?>/public/" class="nav-drawer-link">🏠 முகப்பு</a>
     <div id="navDrawerCats"></div>
     <a href="<?= $baseUrl ?>/public/photo-news" class="nav-drawer-link">📸 பட செய்திகள்</a>
     <a href="<?= $baseUrl ?>/public/special-articles" class="nav-drawer-link">✍️ சிறப்புக் கட்டுரைகள்</a>
-    <a href="<?= $baseUrl ?>/public/citizen-reporter" class="nav-drawer-link">📢 குடிமக்கள் நிருபர்</a>
     <a href="<?= $baseUrl ?>/public/search" class="nav-drawer-link">🔍 தேடல்</a>
 
-    <!-- Account -->
-    <div class="nav-drawer-section">Account</div>
     <?php if ($reader): ?>
-    <a href="<?= $baseUrl ?>/public/reader/profile" class="nav-drawer-link">👤 My Profile</a>
     <a href="<?= $baseUrl ?>/public/auth/reader/logout" class="nav-drawer-link" style="color:#C0001A">🚪 Logout</a>
-    <?php else: ?>
-    <div class="nav-drawer-link" data-action="open-modal" style="cursor:pointer">
-      <svg width="16" height="16" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-      Google மூலம் உள்நுழைக
-    </div>
     <?php endif; ?>
 
   </div>
@@ -696,31 +693,17 @@ try {
     <a href="<?= $baseUrl ?>/public/search" class="mob-nav-item">
       <div class="mob-nav-icon">🔍</div><div class="mob-nav-label">தேடல்</div>
     </a>
-    <!-- Centre: Google login or user avatar -->
+    <!-- Centre floating icon: citizen reporter profile once logged in, "Be a reporter" invite otherwise -->
     <?php if ($reader): ?>
     <a href="<?= $baseUrl ?>/public/reader/profile" class="mob-nav-item mob-nav-google-wrap" style="text-decoration:none">
       <div class="mob-nav-google-fab logged" style="padding:0;overflow:hidden">
-        <?php if (!empty($reader['avatar'])): ?>
-        <img src="<?= htmlspecialchars($reader['avatar']) ?>?sz=96"
-             style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block"
-             alt="<?= htmlspecialchars(substr($reader['name'],0,1)) ?>"
-             referrerpolicy="no-referrer">
-        <?php else: ?>
-        <?= strtoupper(substr($reader['name'],0,1)) ?>
-        <?php endif; ?>
+        <?= tnReaderAvatarHtml($reader, 96) ?>
       </div>
     </a>
     <?php else: ?>
-    <div class="mob-nav-item mob-nav-google-wrap" data-action="open-modal">
-      <div class="mob-nav-google-fab">
-        <svg width="20" height="20" viewBox="0 0 24 24">
-          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-        </svg>
-      </div>
-    </div>
+    <a href="<?= $baseUrl ?>/public/join-us" class="mob-nav-item mob-nav-google-wrap" style="text-decoration:none">
+      <div class="mob-nav-google-fab" aria-label="நிருபர் ஆக">📰</div>
+    </a>
     <?php endif; ?>
     <div class="mob-nav-item" data-action="open-rate-sheet">
       <div class="mob-nav-icon">📊</div><div class="mob-nav-label">விலைகள்</div>
@@ -783,6 +766,16 @@ try {
     <button class="mob-drawer-close" data-action="close-drawer" aria-label="Close menu">✕</button>
   </div>
   <div class="mob-drawer-body">
+    <!-- Reporter / profile indicator — the single login+citizen-reporter entry point -->
+    <?php if ($reader): ?>
+    <a href="<?= $baseUrl ?>/public/reader/profile" class="mob-drawer-link mob-drawer-user-block">
+      <span class="mob-drawer-user-avatar"><?= tnReaderAvatarHtml($reader, 64) ?></span>
+      <span><?= htmlspecialchars($reader['name']) ?></span>
+    </a>
+    <?php else: ?>
+    <a href="<?= $baseUrl ?>/public/join-us" class="mob-drawer-link mob-drawer-reporter-link">📰 நிருபர் ஆக</a>
+    <?php endif; ?>
+    <div class="mob-drawer-divider"></div>
     <div class="lang-switcher lang-switcher-drawer notranslate" translate="no">
       <button data-lang-btn="ta" class="lang-btn active">தமிழ்</button>
       <button data-lang-btn="en" class="lang-btn">English</button>
@@ -804,12 +797,9 @@ try {
     <a href="<?= $baseUrl ?>/public/contribute/login" class="mob-drawer-link">✍️ கட்டுரை எழுது</a>
     <a href="<?= $baseUrl ?>/public/info" class="mob-drawer-link">ℹ️ தகவல் மையம்</a>
     <div class="mob-drawer-link notranslate" translate="no" style="cursor:default">👁 <?= number_format($_siteViews) ?> Views</div>
-    <div class="mob-drawer-divider"></div>
     <?php if ($reader): ?>
-    <div class="mob-drawer-user">👤 <?= htmlspecialchars($reader['name']) ?></div>
+    <div class="mob-drawer-divider"></div>
     <a href="<?= $baseUrl ?>/public/auth/reader/logout" class="mob-drawer-link">🚪 வெளியேறு</a>
-    <?php else: ?>
-    <div class="mob-drawer-link" data-action="drawer-open-modal" style="cursor:pointer">🔑 Google மூலம் உள்நுழைக</div>
     <?php endif; ?>
   </div>
 </div>
@@ -1226,15 +1216,18 @@ function closeRateSheet() {
 
 </script>
 <!-- FLOATING SEARCH BAR — desktop only, always visible, bottom-center -->
-<?php if (empty($noAds) && empty($_SESSION['reader_id'])): ?>
-<a href="<?= $baseUrl ?>/public/auth/reader/login?return=<?= urlencode('/public/citizen-reporter') ?>"
-   class="float-reporter-btn" aria-label="Be a Citizen Reporter">
-  📰 <span>நிருபர் ஆக</span>
-</a>
-<?php elseif (empty($noAds) && !str_contains($_SERVER['REQUEST_URI'] ?? '','citizen-reporter')): ?>
-<a href="<?= $baseUrl ?>/public/citizen-reporter" class="float-reporter-btn" aria-label="Be a Citizen Reporter">
-  📰 <span>நிருபர் ஆக</span>
-</a>
+<?php $_reqUri = $_SERVER['REQUEST_URI'] ?? ''; ?>
+<?php if (empty($noAds) && !str_contains($_reqUri, 'join-us') && !str_contains($_reqUri, 'citizen-reporter')): ?>
+  <?php if ($reader): ?>
+  <a href="<?= $baseUrl ?>/public/reader/profile" class="float-reporter-btn float-reporter-btn-logged" aria-label="My Profile / Citizen Reporter">
+    <span class="float-reporter-avatar"><?= tnReaderAvatarHtml($reader, 40) ?></span>
+    <span>சுயவிவரம்</span>
+  </a>
+  <?php else: ?>
+  <a href="<?= $r ?>/join-us" class="float-reporter-btn" aria-label="Join Us">
+    📰 <span>நிருபர் ஆக</span>
+  </a>
+  <?php endif; ?>
 <?php endif; ?>
 
 <div class="float-search-bar" id="floatSearchBar">

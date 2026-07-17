@@ -73,7 +73,7 @@
           <div class="mb-2">
             <label class="form-label small fw-600">Type</label>
             <select name="type" id="pkgType" class="form-select form-select-sm">
-              <option value="free">Free (7 days)</option>
+              <option value="free">Free (10 days)</option>
               <option value="paid_ad">Ad Only</option>
               <option value="paid_ad_news">Ad + News</option>
               <option value="paid_ad_news_video">Ad + News + Video</option>

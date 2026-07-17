@@ -356,7 +356,22 @@ return [
     ['GET',  '/citizen-reporter',                     'frontend\CitizenReportController@create'],
     ['GET',  '/citizen-reporter/history',                'frontend\CitizenReportController@history'],
     ['POST', '/citizen-reporter',                     'frontend\CitizenReportController@store'],
-    
+
+    /* ── JOIN US (floating icon choice + reporter application) ── */
+    ['GET',  '/join-us',                              'frontend\JoinUsController@choice'],
+    ['GET',  '/join-us/reporter',                     'frontend\JoinUsController@reporterForm'],
+    ['POST', '/join-us/reporter',                     'frontend\JoinUsController@reporterSubmit'],
+
+    /* ── Admin: reporter applications ── */
+    ['GET',  '/admin/reporter-applications',          'admin\ReporterApplicationController@index'],
+    ['GET',  '/admin/reporter-applications/{id}',     'admin\ReporterApplicationController@show'],
+    ['POST', '/admin/reporter-applications/{id}/contacted', 'admin\ReporterApplicationController@markContacted'],
+    ['POST', '/admin/reporter-applications/{id}/reject',    'admin\ReporterApplicationController@reject'],
+    ['GET',  '/portal/reporter-applications',         'admin\ReporterApplicationController@index'],
+    ['GET',  '/portal/reporter-applications/{id}',    'admin\ReporterApplicationController@show'],
+    ['POST', '/portal/reporter-applications/{id}/contacted', 'admin\ReporterApplicationController@markContacted'],
+    ['POST', '/portal/reporter-applications/{id}/reject',    'admin\ReporterApplicationController@reject'],
+
     /* ── Admin aliases for citizen reports ── */
     ['GET',  '/admin/citizen-reports/approved',        'admin\CitizenReportAdminController@approved'],
     ['GET',  '/portal/citizen-reports/approved',       'admin\CitizenReportAdminController@approved'],
@@ -480,6 +495,16 @@ return [
     ['GET',  '/admin/ad-defaults',           'admin\AdSlotController@defaults'],
     ['POST', '/admin/ad-defaults/upload',     'admin\AdSlotController@uploadDefault'],
     ['GET',  '/api/ads/{type}',               'admin\AdSlotController@serve'],
+
+    // Company (house) ads — chief editor only, shown on /ad/{id} pages
+    ['GET',  '/admin/company-ads',              'admin\CompanyAdController@index'],
+    ['POST', '/admin/company-ads/upload',       'admin\CompanyAdController@upload'],
+    ['POST', '/admin/company-ads/toggle/{id}',  'admin\CompanyAdController@toggle'],
+    ['POST', '/admin/company-ads/delete/{id}',  'admin\CompanyAdController@delete'],
+    ['GET',  '/portal/company-ads',             'admin\CompanyAdController@index'],
+    ['POST', '/portal/company-ads/upload',      'admin\CompanyAdController@upload'],
+    ['POST', '/portal/company-ads/toggle/{id}', 'admin\CompanyAdController@toggle'],
+    ['POST', '/portal/company-ads/delete/{id}', 'admin\CompanyAdController@delete'],
     ['GET',  '/admin/rates',                'admin\RateController@index'],
     ['POST', '/admin/rates/update',         'admin\RateController@store'],
     /* District API */

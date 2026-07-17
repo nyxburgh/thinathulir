@@ -33,6 +33,10 @@ class AdPackageModel extends Model
     public function validUntil(array $pkg, string $from, int $customDays = 0): string
     {
         $start = new \DateTime($from);
+        if (!empty($pkg['is_trial'])) {
+            $start->modify('+10 days');
+            return $start->format('Y-m-d');
+        }
         if ($pkg['slot_type'] === 'vertical' || !empty($pkg['vt_duration_days']) && !$pkg['includes_square'] && !$pkg['includes_horizontal']) {
             $days = $customDays ?: ($pkg['vt_duration_days'] ?? 30);
             $start->modify("+{$days} days");

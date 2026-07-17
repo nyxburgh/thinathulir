@@ -17,6 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="<?= \App\Core\Helper::assetVersioned('/assets/css/portal.css') ?>" rel="stylesheet">
 <link href="<?= \App\Core\Helper::assetVersioned('/assets/css/editor_portal.css') ?>" rel="stylesheet">
 <link href="<?= \App\Core\Helper::assetVersioned('/assets/css/ads.css') ?>" rel="stylesheet">
 <meta name="csrf-token" content="<?= \App\Core\CSRF::token() ?>">
@@ -182,6 +183,11 @@ try {
       <a href="<?= $r ?>/portal/ads?status=pending" class="ep-nav-item" style="font-size:12px;padding-left:28px">
         <i class="bi bi-clock-history"></i> Pending
       </a>
+      <?php if (\App\Core\Auth::isChiefEditor()): ?>
+      <a href="<?= $r ?>/portal/company-ads" class="ep-nav-item <?= epActive('/portal/company-ads',$current) ?>">
+        <i class="bi bi-building"></i> Company Ads
+      </a>
+      <?php endif; ?>
 
       <div class="ep-nav-label">My Work</div>
       <a href="<?= $r ?>/portal/articles" class="ep-nav-item <?= epActive('/portal/articles',$current) ?>">

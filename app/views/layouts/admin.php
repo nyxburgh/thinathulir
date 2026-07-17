@@ -152,6 +152,9 @@ if (window.innerWidth < 1024 && document.cookie.indexOf("admin_mobile_ok") < 0) 
     <a href="<?= $routeBase ?>/admin/ad-defaults" class="tn-nav-item <?= isActive('/admin/ad-defaults', $current) ?>">
       <i class="bi bi-image"></i> Default Images
     </a>
+    <a href="<?= $routeBase ?>/admin/company-ads" class="tn-nav-item <?= isActive('/admin/company-ads', $current) ?>">
+      <i class="bi bi-building"></i> Company Ads
+    </a>
     <a href="<?= $routeBase ?>/admin/business-ads?status=pending" class="tn-nav-item <?= isActive('/admin/business-ads', $current) && ($_GET['status']??'')==='pending' ? 'active' : '' ?>" style="padding-left:28px;font-size:12px">
       <i class="bi bi-clock-history"></i> Pending Approval
     </a>
@@ -186,6 +189,13 @@ if (window.innerWidth < 1024 && document.cookie.indexOf("admin_mobile_ok") < 0) 
       <?php try {
         $cr = (new \App\Models\CitizenReportModel())->pendingCount();
         if ($cr > 0): ?><span class="tn-badge"><?= $cr ?></span><?php endif;
+      } catch(\Exception $e) {} ?>
+    </a>
+    <a href="<?= $routeBase ?>/admin/reporter-applications" class="tn-nav-item <?= isActive('/admin/reporter-applications', $current) ?>">
+      <i class="bi bi-person-vcard"></i> Reporter Applications
+      <?php try {
+        $ra = (new \App\Models\ReporterApplicationModel())->pendingCount();
+        if ($ra > 0): ?><span class="tn-badge"><?= $ra ?></span><?php endif;
       } catch(\Exception $e) {} ?>
     </a>
     <?php endif; ?>

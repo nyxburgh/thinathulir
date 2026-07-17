@@ -2,7 +2,7 @@
 namespace App\Controllers\Frontend;
 
 use App\Core\{Controller, Database};
-use App\Models\{BusinessAdModel, FrontendArticleModel};
+use App\Models\{BusinessAdModel, FrontendArticleModel, CompanyAdModel};
 use App\Core\Helper;
 
 class AdPublicController extends Controller
@@ -64,6 +64,13 @@ class AdPublicController extends Controller
         // Recent news — keeps the ad page from looking like a bare, empty layout
         $recentArticles = (new FrontendArticleModel())->latest(3);
 
+        // Company (house) banners — replace other customers' ads on this page.
+        // Desktop: 1 vertical poster + 2 squares. Mobile: 1 horizontal card.
+        $companyAdModel = new CompanyAdModel();
+        $companyVertical   = $companyAdModel->activeBySlot('vertical', 1);
+        $companySquares    = $companyAdModel->activeBySlot('square', 2);
+        $companyHorizontal = $companyAdModel->activeBySlot('horizontal', 1);
+
         $this->view('frontend.ad.show', [
             'pageTitle'  => $ad['business_name'] . ' | தினத்துளிர்',
             'metaTitle'  => $ad['business_name'] . (!empty($ad['district_name']) ? ' — ' . $ad['district_name'] : '') . ' | தினத்துளிர்',
@@ -74,6 +81,9 @@ class AdPublicController extends Controller
             'ad'             => $ad,
             'articles'       => $articles,
             'recentArticles' => $recentArticles,
+            'companyVertical'   => $companyVertical,
+            'companySquares'    => $companySquares,
+            'companyHorizontal' => $companyHorizontal,
             'shareUrl'   => $shareUrl,
             'noSidebar'  => true,
             'noAds'      => true,
