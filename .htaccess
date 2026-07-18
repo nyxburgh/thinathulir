@@ -1,12 +1,12 @@
 Options -Indexes
 RewriteEngine On
-RewriteBase /thinathulir/
+RewriteBase /
 
 # Block sensitive directories
 RewriteRule ^(\.env|storage|app|config|cron)(/|$) - [F,L]
 
 # Route everything through public/
-RewriteCond %{REQUEST_URI} !^/thinathulir/public/
+RewriteCond %{REQUEST_URI} !^/public/
 RewriteRule ^(.*)$ public/$1 [L]
 
 <IfModule mod_headers.c>

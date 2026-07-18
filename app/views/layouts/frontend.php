@@ -512,7 +512,9 @@ try {
   <!-- DESKTOP: [square ad] [logo+tagline+date] [square ad] -->
   <div class="masthead notranslate" translate="no">
     <div class="masthead-ad">
-      <?php if (empty($noAds)): ?>
+      <?php if (!empty($companySquares[0])): ?>
+      <img src="<?= $r . htmlspecialchars($companySquares[0]['filepath']) ?>" alt="<?= htmlspecialchars($companySquares[0]['alt_text'] ?: $siteName) ?>">
+      <?php elseif (empty($noAds)): ?>
       <div class="ad-rotator" data-slot="square_a" data-cat="<?= $categoryId ?? 0 ?>"></div>
       <?php endif; ?>
     </div>
@@ -537,7 +539,9 @@ try {
       <?php endif; ?>
     </div>
     <div class="masthead-ad">
-      <?php if (empty($noAds)): ?>
+      <?php if (!empty($companySquares[1])): ?>
+      <img src="<?= $r . htmlspecialchars($companySquares[1]['filepath']) ?>" alt="<?= htmlspecialchars($companySquares[1]['alt_text'] ?: $siteName) ?>">
+      <?php elseif (empty($noAds)): ?>
       <div class="ad-rotator" data-slot="square_b" data-cat="<?= $categoryId ?? 0 ?>"></div>
       <?php endif; ?>
     </div>
@@ -623,6 +627,20 @@ try {
 <?php endif; ?>
 </div>
 
+<!-- Company horizontal banner — desktop only, above footer -->
+<?php if (!empty($companyHorizontal)): ?>
+<style>
+.ad-footer-banner{display:none}
+@media (min-width:1024px){
+  .ad-footer-banner{display:block;max-width:1040px;margin:0 auto 20px;padding:0 16px}
+  .ad-footer-banner img{width:100%;display:block;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+}
+</style>
+<div class="ad-footer-banner notranslate" translate="no">
+  <img src="<?= $r . htmlspecialchars($companyHorizontal[0]['filepath']) ?>" alt="<?= htmlspecialchars($companyHorizontal[0]['alt_text'] ?: $siteName) ?>">
+</div>
+<?php endif; ?>
+
 <!-- FOOTER: copyright only -->
 <footer class="site-footer notranslate" translate="no">
   <div class="site-footer-inner">
@@ -681,7 +699,11 @@ try {
 <!-- MOBILE: Floating horizontal ad above bottom nav -->
 <?php if (empty($noNav)): ?>
 <div class="mob-footer-ad notranslate" translate="no">
+  <?php if (!empty($companyHorizontal[0])): ?>
+  <img src="<?= $r . htmlspecialchars($companyHorizontal[0]['filepath']) ?>" alt="<?= htmlspecialchars($companyHorizontal[0]['alt_text'] ?: $siteName) ?>" style="width:100%;height:100%;object-fit:cover;display:block">
+  <?php elseif (empty($noAds)): ?>
   <div class="ad-rotator" data-slot="horizontal" data-cat="<?= $categoryId ?? 0 ?>"></div>
+  <?php endif; ?>
 </div>
 <?php endif; ?>
 

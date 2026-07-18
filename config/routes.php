@@ -402,6 +402,7 @@ return [
     ['GET', '/disclaimer',           'frontend\TrustPageController@disclaimer'],
     ['GET', '/info',              'frontend\TrustPageController@info'],
     ['GET', '/robots.txt',        'frontend\SeoController@robots'],
+    ['GET', '/ads.txt',           'frontend\SeoController@adsTxt'],
 
     /* ── BUSINESS ADS ── */
 

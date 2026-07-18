@@ -34,14 +34,16 @@
   };
 
   /* ── Editor Portal: full sidebar slide-over (desktop nav list on mobile) ── */
-  document.getElementById('epSidebarToggle')?.addEventListener('click', function () {
+  window.toggleEpSidebar = function () {
     document.getElementById('epSidebar')?.classList.toggle('open');
     document.getElementById('epSidebarOverlay')?.classList.toggle('open');
-  });
-  document.getElementById('epSidebarOverlay')?.addEventListener('click', function () {
+  };
+  window.closeEpSidebar = function () {
     document.getElementById('epSidebar')?.classList.remove('open');
     document.getElementById('epSidebarOverlay')?.classList.remove('open');
-  });
+  };
+  document.getElementById('epSidebarToggle')?.addEventListener('click', window.toggleEpSidebar);
+  document.getElementById('epSidebarOverlay')?.addEventListener('click', window.closeEpSidebar);
 
   /* ── Mobile: tap anywhere on a table row → open its edit/show page ──
      Skips clicks on buttons, inputs, checkboxes, or nested forms. */

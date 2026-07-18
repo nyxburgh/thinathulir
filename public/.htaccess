@@ -1,6 +1,6 @@
 Options -Indexes
 RewriteEngine On
-RewriteBase /thinathulir/
+RewriteBase /public/
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

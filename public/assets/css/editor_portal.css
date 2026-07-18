@@ -60,6 +60,22 @@ a { text-decoration: none; color: inherit; }
 }
 .ep-topbar-btn:hover { background: var(--ep-gray1); }
 
+/* Desktop top nav — quick links alongside the sidebar (mirrors .portal-nav) */
+.ep-topnav {
+  display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.ep-topnav::-webkit-scrollbar { display: none; }
+.ep-topnav-link {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 6px;
+  font-size: 13.5px; font-weight: 500; color: var(--ep-muted);
+  white-space: nowrap; transition: all .15s;
+}
+.ep-topnav-link i { font-size: 15px; }
+.ep-topnav-link:hover { background: var(--ep-gray1); color: var(--ep-text); }
+.ep-topnav-link.active { background: var(--ep-gray1); color: var(--ep-red); font-weight: 600; }
+
 /* Notification bell */
 .ep-notif-btn {
   position: relative; width: 34px; height: 34px;
@@ -287,16 +303,28 @@ a { text-decoration: none; color: inherit; }
 }
 .ep-sidebar-overlay.open { display: block; }
 
+/* Close (X) button inside the off-canvas sidebar — mobile only */
+.ep-sidebar-close {
+  display: none; position: absolute; top: 10px; right: 10px;
+  width: 32px; height: 32px; border-radius: 6px;
+  border: 1.5px solid var(--ep-gray2); background: var(--ep-white);
+  align-items: center; justify-content: center; font-size: 16px;
+  color: var(--ep-text); cursor: pointer; z-index: 1;
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   .ep-sidebar-toggle { display: flex; }
+  .ep-topnav { display: none; }
   .ep-sidebar {
     position: fixed; left: 0;
     top: var(--ep-topbar-h); bottom: 0;
     z-index: 199; transform: translateX(-100%);
     transition: transform .25s ease;
+    padding-top: 44px;
   }
   .ep-sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,.15); }
+  .ep-sidebar-close { display: flex; }
   .ep-content { padding: 14px 12px 40px 12px; padding-bottom: 78px; }
   .ep-topbar-btn > span { display: none; }
   .tn-page-header { flex-direction: column; gap: 10px; }

@@ -132,4 +132,16 @@ class SeoController extends Controller
            . "Sitemap: {$baseUrl}/sitemap-news.xml\n";
         exit;
     }
+
+    /** GET /ads.txt — Authorized Digital Sellers file. Content is
+     *  settings-driven (group 'seo', key 'ads_txt_content') so ad
+     *  network verification lines (e.g. Google AdSense) can be added
+     *  from Admin → Settings without a code deploy. */
+    public function adsTxt(): void
+    {
+        header('Content-Type: text/plain; charset=utf-8');
+        $content = trim((new SettingModel())->getValue('ads_txt_content', ''));
+        echo $content !== '' ? $content . "\n" : "# No authorized sellers configured yet.\n";
+        exit;
+    }
 }

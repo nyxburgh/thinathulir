@@ -57,6 +57,23 @@ try {
         <div class="ep-logo-sub"><?= $epRoleLabels[$role] ?? ucfirst(str_replace("_"," ",$role)) ?></div>
       </div>
     </a>
+    <nav class="ep-topnav">
+      <a href="<?= $r ?>/portal/dashboard" class="ep-topnav-link <?= epActive('/portal/dashboard',$current) ?>">
+        <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+      </a>
+      <a href="<?= $r ?>/portal/all-articles" class="ep-topnav-link <?= (epActive('/portal/all-articles',$current) && !str_contains($current,'/pending')) ? 'active' : '' ?>">
+        <i class="bi bi-file-earmark-text"></i><span>Articles</span>
+      </a>
+      <a href="<?= $r ?>/portal/photo-news" class="ep-topnav-link <?= epActive('/photo-news',$current) ?>">
+        <i class="bi bi-camera"></i><span>Photo News</span>
+      </a>
+      <a href="<?= $r ?>/portal/import" class="ep-topnav-link <?= epActive('/portal/import',$current) ?>">
+        <i class="bi bi-link-45deg"></i><span>Import URL</span>
+      </a>
+      <a href="<?= $r ?>/portal/ads" class="ep-topnav-link <?= epActive('/portal/ads',$current) ?>">
+        <i class="bi bi-megaphone"></i><span>Business Ads</span>
+      </a>
+    </nav>
     <div class="ep-topbar-right">
       <a href="<?= $baseUrl ?>/public/" target="_blank" class="ep-topbar-btn">
         <i class="bi bi-box-arrow-up-right"></i> View Site
@@ -84,10 +101,11 @@ try {
   </div>
 </div>
 
+<div class="ep-sidebar-overlay" id="epSidebarOverlay"></div>
 <div class="ep-layout">
   <!-- SIDEBAR -->
   <div class="ep-sidebar" id="epSidebar">
-    <div class="ep-sidebar-overlay" id="epSidebarOverlay"></div>
+    <button type="button" class="ep-sidebar-close" onclick="closeEpSidebar()" aria-label="Close menu">✕</button>
     <nav class="ep-nav">
 
       <div class="ep-nav-label">Editorial</div>
@@ -126,6 +144,9 @@ try {
       </a>
       <a href="<?= $r ?>/portal/media" class="ep-nav-item <?= epActive('/portal/media',$current) ?>">
         <i class="bi bi-images"></i> Media Library
+      </a>
+      <a href="<?= $r ?>/portal/photo-news" class="ep-nav-item <?= epActive('/photo-news',$current) ?>">
+        <i class="bi bi-camera"></i> Photo News
       </a>
       <a href="<?= $r ?>/portal/special-categories" class="ep-nav-item <?= epActive('/portal/special-categories',$current) ?>">
         <i class="bi bi-flag"></i> Special Categories
@@ -221,7 +242,7 @@ try {
   </div>
 </div>
 
-<!-- MOBILE STICKY FOOTER (Chief Editor — 5 icons) -->
+<!-- MOBILE STICKY FOOTER (Chief Editor — 6 icons) -->
 <nav class="ep-mob-footer">
   <a href="<?= $r ?>/portal/dashboard" class="ep-mob-item <?= str_contains($current,'/dashboard') ? 'active' : '' ?>">
     <i class="bi bi-speedometer2"></i>
@@ -235,14 +256,18 @@ try {
     <div class="ep-mob-write-btn"><i class="bi bi-pencil-square"></i></div>
     <span>Write</span>
   </a>
+  <a href="<?= $r ?>/portal/photo-news" class="ep-mob-item <?= epActive('/photo-news',$current) ? 'active' : '' ?>">
+    <i class="bi bi-camera"></i>
+    <span>Photos</span>
+  </a>
   <a href="<?= $r ?>/portal/media" class="ep-mob-item <?= epActive('/portal/media',$current) ? 'active' : '' ?>">
     <i class="bi bi-images"></i>
     <span>Media</span>
   </a>
-  <div class="ep-mob-item" onclick="document.getElementById('epSidebarToggle')?.click()">
+  <button type="button" class="ep-mob-item" onclick="toggleEpSidebar()">
     <i class="bi bi-grid-3x3-gap-fill"></i>
     <span>Menu</span>
-  </div>
+  </button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

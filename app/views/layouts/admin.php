@@ -109,6 +109,9 @@ if (window.innerWidth < 1024 && document.cookie.indexOf("admin_mobile_ok") < 0) 
     <a href="<?= $routeBase ?>/admin/premium" class="tn-nav-item <?= isActive('/admin/premium', $current) ?>">
       <i class="bi bi-lock"></i> Premium
     </a>
+    <a href="<?= $routeBase ?>/admin/photo-news" class="tn-nav-item <?= isActive('/photo-news', $current) ?>">
+      <i class="bi bi-camera"></i> Photo News
+    </a>
     <a href="<?= $routeBase ?>/admin/newspaper" class="tn-nav-item <?= isActive('/admin/newspaper', $current) ?>">
       <i class="bi bi-newspaper"></i> E-Paper Archive
     </a>

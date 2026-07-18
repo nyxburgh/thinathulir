@@ -64,6 +64,7 @@ $lbSrcs  = array_map(fn($i) => $assetUrl . ($i['src'] ?? ''), $allFlat);
 .cad-desc{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--gray-1,#F0EFE9);font-size:13.5px;color:var(--text-muted,#5A5A5A);line-height:1.75}
 
 .cad-share{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid var(--gray-1,#F0EFE9)}
+.cad-share-top{margin-top:10px;margin-bottom:6px;padding-top:0;border-top:none}
 
 /* Gallery */
 .cad-gallery{margin-bottom:20px}
@@ -112,41 +113,32 @@ $lbSrcs  = array_map(fn($i) => $assetUrl . ($i['src'] ?? ''), $allFlat);
 
 <div class="cad-page">
 
-  <!-- Company vertical poster — desktop sidebar only -->
-  <?php if (!empty($companyVertical)): ?>
-  <aside class="cad-sidebar cad-desktop-only">
-    <div class="cad-ad-label">Advertisement</div>
-    <img src="<?= $assetUrl . Helper::e($companyVertical[0]['filepath']) ?>"
-         alt="<?= Helper::e($companyVertical[0]['alt_text'] ?: 'தினத்துளிர்') ?>">
-  </aside>
-  <?php endif; ?>
-
   <div class="cad-main">
-
-  <!-- Company horizontal banner — mobile only -->
-  <?php if (!empty($companyHorizontal)): ?>
-  <div class="cad-hero-banner cad-mobile-only">
-    <img src="<?= $assetUrl . Helper::e($companyHorizontal[0]['filepath']) ?>"
-         alt="<?= Helper::e($companyHorizontal[0]['alt_text'] ?: 'தினத்துளிர்') ?>">
-  </div>
-  <?php endif; ?>
-
-  <!-- Company square banners — desktop only, top of page -->
-  <?php if (!empty($companySquares)): ?>
-  <div class="cad-squares cad-desktop-only">
-    <?php foreach (array_slice($companySquares, 0, 2) as $sq): ?>
-    <div>
-      <img src="<?= $assetUrl . Helper::e($sq['filepath']) ?>"
-           alt="<?= Helper::e($sq['alt_text'] ?: 'தினத்துளிர்') ?>">
-    </div>
-    <?php endforeach; ?>
-  </div>
-  <?php endif; ?>
 
   <!-- Business info -->
   <div class="cad-card">
     <div class="cad-badge"><i class="bi bi-patch-check-fill"></i> Business Listing</div>
     <h1 class="cad-title"><?= Helper::e($bizName) ?></h1>
+
+    <!-- Share row -->
+    <?php
+    $_adFbUrl = urlencode($shareUrl);
+    $_adTwText = urlencode($bizName . ' ' . $shareUrl);
+    ?>
+    <div class="cad-share cad-share-top">
+      <a href="https://wa.me/?text=<?= urlencode($bizName . "\n" . $shareUrl) ?>" target="_blank" rel="noopener" class="sbc sbc-wa">
+        <i class="bi bi-whatsapp"></i><span>WhatsApp</span>
+      </a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=<?= $_adFbUrl ?>" target="_blank" rel="noopener" class="sbc sbc-fb">
+        <i class="bi bi-facebook"></i><span>Facebook</span>
+      </a>
+      <a href="https://twitter.com/intent/tweet?text=<?= $_adTwText ?>" target="_blank" rel="noopener" class="sbc sbc-tw">
+        <i class="bi bi-twitter-x"></i><span>X</span>
+      </a>
+      <button id="cpBtn" onclick="copyLink()" class="sbc sbc-cp">
+        <i class="bi bi-link-45deg"></i><span>Copy Link</span>
+      </button>
+    </div>
 
     <div class="cad-info-grid">
       <?php if ($contact): ?>
@@ -198,26 +190,6 @@ $lbSrcs  = array_map(fn($i) => $assetUrl . ($i['src'] ?? ''), $allFlat);
     <?php if ($desc): ?>
     <p class="cad-desc"><?= nl2br(Helper::e($desc)) ?></p>
     <?php endif; ?>
-
-    <!-- Share row -->
-    <?php
-    $_adFbUrl = urlencode($shareUrl);
-    $_adTwText = urlencode($bizName . ' ' . $shareUrl);
-    ?>
-    <div class="cad-share">
-      <a href="https://wa.me/?text=<?= urlencode($bizName . "\n" . $shareUrl) ?>" target="_blank" rel="noopener" class="sbc sbc-wa">
-        <i class="bi bi-whatsapp"></i><span>WhatsApp</span>
-      </a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=<?= $_adFbUrl ?>" target="_blank" rel="noopener" class="sbc sbc-fb">
-        <i class="bi bi-facebook"></i><span>Facebook</span>
-      </a>
-      <a href="https://twitter.com/intent/tweet?text=<?= $_adTwText ?>" target="_blank" rel="noopener" class="sbc sbc-tw">
-        <i class="bi bi-twitter-x"></i><span>X</span>
-      </a>
-      <button id="cpBtn" onclick="copyLink()" class="sbc sbc-cp">
-        <i class="bi bi-link-45deg"></i><span>Copy Link</span>
-      </button>
-    </div>
   </div>
 
   <!-- Images grouped by slot type — carousel per type -->
@@ -280,6 +252,14 @@ $lbSrcs  = array_map(fn($i) => $assetUrl . ($i['src'] ?? ''), $allFlat);
   <div class="cad-section">
     <div class="cad-gallery-label">சமீபத்திய செய்திகள் · Recent News</div>
     <div class="g4">
+      <?php if (!empty($companySquares[0])): ?>
+      <div class="nc nc-ad cad-mobile-only">
+        <span class="nc-ad-label">Ad</span>
+        <img src="<?= $assetUrl . Helper::e($companySquares[0]['filepath']) ?>"
+             alt="<?= Helper::e($companySquares[0]['alt_text'] ?: 'தினத்துளிர்') ?>"
+             style="width:100%;height:110px;object-fit:cover;border-radius:6px;display:block">
+      </div>
+      <?php endif; ?>
       <?php $_raArtCount = 0; foreach ($recentArticles as $ra):
         $raHasImg = !empty($ra['image_url']); $_raArtCount++; ?>
       <a href="<?= $siteUrl ?>/article/<?= Helper::e($ra['slug']) ?>" class="nc <?= $raHasImg ? '' : 'nc-no-img' ?>">
@@ -301,6 +281,16 @@ $lbSrcs  = array_map(fn($i) => $assetUrl . ($i['src'] ?? ''), $allFlat);
   <?php endif; ?>
 
   </div>
+
+  <!-- Company vertical poster — desktop right-side panel only -->
+  <?php if (!empty($companyVertical)): ?>
+  <aside class="cad-sidebar cad-desktop-only">
+    <div class="cad-ad-label">Advertisement</div>
+    <img src="<?= $assetUrl . Helper::e($companyVertical[0]['filepath']) ?>"
+         alt="<?= Helper::e($companyVertical[0]['alt_text'] ?: 'தினத்துளிர்') ?>">
+  </aside>
+  <?php endif; ?>
+
 </div>
 
 <!-- Lightbox -->
