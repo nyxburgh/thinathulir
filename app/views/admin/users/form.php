@@ -1,7 +1,13 @@
-<?php use App\Core\{Helper, CSRF}; ?>
+<?php use App\Core\{Helper, CSRF, Auth}; ?>
 <?php
-  $roleIdBySlug    = array_column($roles, 'id', 'slug');
-  $reporterRoleId  = $roleIdBySlug['reporter'] ?? 7;
+  $roleIdBySlug     = array_column($roles, 'id', 'slug');
+  $reporterRoleId   = $roleIdBySlug['reporter'] ?? 7;
+  $editorialRoleIds = array_values(array_filter(array_map(
+      fn($slug) => $roleIdBySlug[$slug] ?? null,
+      Auth::EDITORIAL_ROLES
+  )));
+  $overridesBySlug = array_column($permOverrides ?? [], 'effect', 'permission_slug');
+  $teamUrl = $isEdit ? rtrim($r, '/') . '/our-team/' . $user['id'] : '';
 ?>
 <div class="tn-page-header">
   <h2 class="tn-page-title"><?= $isEdit ? 'Edit User' : 'Add User' ?></h2>
@@ -16,6 +22,7 @@
       <div class="tn-card-body">
         <form action="<?= $r ?>/admin/users/<?= $isEdit ? 'edit/'.$user['id'] : 'create' ?>" method="POST">
           <?= CSRF::field() ?>
+          <input type="hidden" name="_basic_info" value="1">
           <div class="row g-3">
             <div class="col-sm-6">
               <label class="form-label fw-600">Full Name *</label>
@@ -63,16 +70,34 @@
                 <option value="0" <?= !($user['is_active'] ?? 1) ? 'selected' : '' ?>>Inactive</option>
               </select>
             </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-600">Phone</label>
+              <input type="text" name="phone" class="form-control" value="<?= Helper::e($user['phone'] ?? '') ?>">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-600">Designation</label>
+              <input type="text" name="designation" class="form-control" placeholder="e.g. Staff Reporter"
+                     value="<?= Helper::e($user['designation'] ?? '') ?>">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-600">ID No.</label>
+              <input type="text" name="id_no" class="form-control" placeholder="Employee/Press ID No."
+                     value="<?= Helper::e($user['id_no'] ?? '') ?>">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-600">Date of Birth</label>
+              <input type="date" name="dob" class="form-control" value="<?= Helper::e($user['dob'] ?? '') ?>">
+            </div>
           </div>
           <hr class="my-4">
-          <!-- AUTO APPROVE — reporters only, set by chief editor/admin -->
+          <!-- AUTO APPROVE — editorial staff only, set by chief editor/admin -->
           <?php if (\App\Core\Auth::can('set_auto_approve')): ?>
-          <div class="form-check form-switch mb-3" id="autoApproveRow" style="<?= in_array($user['role_id'] ?? 3, [$reporterRoleId]) ? '' : 'display:none' ?>">
+          <div class="form-check form-switch mb-3" id="autoApproveRow" style="<?= in_array($user['role_id'] ?? 3, $editorialRoleIds) ? '' : 'display:none' ?>">
             <input class="form-check-input" type="checkbox" name="auto_approve" value="1"
                    id="autoApprove" <?= !empty($user['auto_approve']) ? 'checked' : '' ?>>
             <label class="form-check-label" for="autoApprove">
               <strong>⚡ Auto Approve</strong>
-              <span class="text-muted small ms-2">— Articles publish instantly, chief editor gets notification</span>
+              <span class="text-muted small ms-2">— Articles publish instantly, chief editor gets notification (works for reporters and editors alike — use it to block an editor's own auto-approve too)</span>
             </label>
           </div>
           <?php endif; ?>
@@ -192,11 +217,131 @@
   </div>
 </div>
 
+<?php if ($isEdit): ?>
+<div class="row g-4 mt-0">
+  <!-- TEAM / ID CARD -->
+  <div class="col-lg-6">
+    <div class="tn-card mb-4">
+      <div class="tn-card-header"><span><i class="bi bi-person-vcard me-2"></i>Team / ID Card</span></div>
+      <div class="tn-card-body">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <?php if (!empty($user['avatar'])): ?>
+          <img src="<?= $r ?><?= Helper::e($user['avatar']) ?>" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:8px">
+          <?php else: ?>
+          <div style="width:80px;height:80px;border-radius:8px;background:var(--bs-dark-bg-subtle,#2d3748);display:flex;align-items:center;justify-content:center">
+            <i class="bi bi-person fs-2 text-muted"></i>
+          </div>
+          <?php endif; ?>
+          <form action="<?= $r ?>/admin/users/photo/<?= $user['id'] ?>" method="POST" enctype="multipart/form-data" class="flex-grow-1">
+            <?= CSRF::field() ?>
+            <input type="file" name="photo" class="form-control form-control-sm mb-2" accept="image/*" required>
+            <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-upload me-1"></i>Upload Photo</button>
+          </form>
+        </div>
+
+        <p class="small text-muted mb-2">
+          Public verification page — shown on the "Our Team" page when this user is active and not blocked.
+          Encode this URL as a QR code and print it on their physical ID card:
+        </p>
+        <div class="input-group mb-2">
+          <input type="text" class="form-control form-control-sm" id="teamUrlInput" value="<?= Helper::e($teamUrl) ?>" readonly>
+          <a href="<?= Helper::e($teamUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-up-right"></i></a>
+        </div>
+        <div id="qrHolder" class="my-2"></div>
+        <button type="button" class="btn btn-sm btn-outline-info" id="qrDownloadBtn"><i class="bi bi-qr-code me-1"></i>Download QR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM PERMISSIONS -->
+  <div class="col-lg-6">
+    <div class="tn-card mb-4">
+      <div class="tn-card-header">
+        <span><i class="bi bi-sliders me-2"></i>Custom Permissions</span>
+        <span class="badge bg-warning text-dark">Overrides role</span>
+      </div>
+      <div class="tn-card-body">
+        <p class="small text-muted">Grant a permission this user's role doesn't normally have, or revoke one it does — without changing their role.</p>
+        <form action="<?= $r ?>/admin/users/permissions/<?= $user['id'] ?>" method="POST">
+          <?= CSRF::field() ?>
+          <div style="max-height:360px;overflow-y:auto">
+            <?php foreach (Auth::PERMISSION_CATALOG as $group => $slugs): ?>
+            <div class="fw-600 small text-muted mt-2 mb-1"><?= Helper::e($group) ?></div>
+            <?php foreach ($slugs as $slug => $label): $effect = $overridesBySlug[$slug] ?? 'default'; ?>
+            <div class="d-flex align-items-center justify-content-between gap-2 py-1 border-bottom">
+              <span class="small"><?= Helper::e($label) ?></span>
+              <div class="btn-group btn-group-sm" role="group">
+                <input type="radio" class="btn-check" name="perm_<?= $slug ?>" id="p_<?= $slug ?>_d" value="default" <?= $effect==='default'?'checked':'' ?> onchange="syncPerm('<?= $slug ?>')">
+                <label class="btn btn-outline-secondary" for="p_<?= $slug ?>_d">Default</label>
+
+                <input type="radio" class="btn-check" name="perm_<?= $slug ?>" id="p_<?= $slug ?>_g" value="grant" <?= $effect==='grant'?'checked':'' ?> onchange="syncPerm('<?= $slug ?>')">
+                <label class="btn btn-outline-success" for="p_<?= $slug ?>_g">Grant</label>
+
+                <input type="radio" class="btn-check" name="perm_<?= $slug ?>" id="p_<?= $slug ?>_r" value="revoke" <?= $effect==='revoke'?'checked':'' ?> onchange="syncPerm('<?= $slug ?>')">
+                <label class="btn btn-outline-danger" for="p_<?= $slug ?>_r">Revoke</label>
+              </div>
+            </div>
+            <?php endforeach; ?>
+            <?php endforeach; ?>
+          </div>
+          <div id="permHidden"></div>
+          <button type="submit" class="btn btn-warning fw-600 w-100 mt-3">
+            <i class="bi bi-sliders me-2"></i>Save Custom Permissions
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
+QRCode.toCanvas(document.createElement('canvas'), document.getElementById('teamUrlInput').value, function () {});
+(function () {
+  const url = document.getElementById('teamUrlInput').value;
+  const holder = document.getElementById('qrHolder');
+  const canvas = document.createElement('canvas');
+  holder.appendChild(canvas);
+  QRCode.toCanvas(canvas, url, { width: 160 }, function (err) {
+    if (err) { holder.innerHTML = '<span class="text-danger small">QR generation failed</span>'; return; }
+    document.getElementById('qrDownloadBtn').addEventListener('click', function () {
+      const a = document.createElement('a');
+      a.download = 'team-qr-<?= $user['id'] ?>.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    });
+  });
+})();
+
+// Custom Permissions form only needs to actually post the non-default
+// choices as perm_grant[]/perm_revoke[] — build those from the radios on submit.
+document.querySelectorAll('form[action*="/admin/users/permissions/"]').forEach(function (form) {
+  form.addEventListener('submit', function () {
+    const hidden = document.getElementById('permHidden');
+    hidden.innerHTML = '';
+    form.querySelectorAll('input[type=radio]:checked').forEach(function (radio) {
+      if (radio.value === 'default') return;
+      const slug = radio.name.replace('perm_', '');
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = (radio.value === 'grant' ? 'perm_grant[]' : 'perm_revoke[]');
+      input.value = slug;
+      hidden.appendChild(input);
+    });
+  });
+});
+</script>
+<?php endif; ?>
+
+<script>
+const EDITORIAL_ROLE_IDS = <?= json_encode($editorialRoleIds) ?>;
 function handleRoleChange() {
   const role    = parseInt(document.getElementById('roleSelect').value);
   const section = document.getElementById('permSection');
   // Show permissions for editor roles (2=chief_editor, 4=district_editor, 5=category_editor, 6=senior_reporter)
   section.style.display = [2,4,5,6].includes(role) ? '' : 'none';
+
+  const autoApproveRow = document.getElementById('autoApproveRow');
+  if (autoApproveRow) autoApproveRow.style.display = EDITORIAL_ROLE_IDS.includes(role) ? '' : 'none';
 }
 </script>

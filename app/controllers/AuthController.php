@@ -21,6 +21,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             $role = Auth::role();
             if ($role === 'admin')     $this->redirect('/admin/dashboard');
+            elseif ($role === 'sub_admin') $this->redirect('/panel/dashboard');
             elseif ($role === 'ad_owner') $this->redirect('/portal/my-ads');
             else                       $this->redirect('/portal/dashboard');
         }
@@ -49,10 +50,12 @@ class AuthController extends Controller
         Auth::login($user);
         $this->users->updateLastLogin($user['id']);
 
-        // Admin → admin dashboard, Ad Owner → my-ads, Editor/Reporter → portal dashboard
+        // Admin → admin dashboard, Sub Admin → panel dashboard, Ad Owner → my-ads, Editor/Reporter → portal dashboard
         $role = $user['role_slug'] ?? 'reporter';
         if ($role === 'admin') {
             $this->redirect('/admin/dashboard');
+        } elseif ($role === 'sub_admin') {
+            $this->redirect('/panel/dashboard');
         } elseif ($role === 'ad_owner') {
             $this->redirect('/portal/my-ads');
         } else {

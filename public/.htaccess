@@ -1,6 +1,12 @@
 Options -Indexes
 RewriteEngine On
-RewriteBase /public/
+RewriteBase /thinathulir/public/
+
+# Hide /public/ from the address bar — frontend pages only.
+# Admin/portal/panel/contribute/login/logout keep their URL as typed.
+RewriteCond %{THE_REQUEST} \s/+thinathulir/public/([^\s?]*) [NC]
+RewriteCond %1 !^(admin|portal|panel|contribute|login|logout)(/|$|\?) [NC]
+RewriteRule ^ /thinathulir/%1 [R=301,L,NE]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

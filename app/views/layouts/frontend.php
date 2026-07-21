@@ -482,6 +482,8 @@ try {
 <div class="mob-topbar notranslate" translate="no">
   <div class="mob-topbar-logo-row">
     <a href="<?= $baseUrl ?>/public/" class="mob-topbar-logo">
+      <!-- Placeholder logo mark — swap for the real logo image at launch -->
+      <span class="logo-icon-ph mob-topbar-logo-icon" aria-hidden="true">த</span>
       <span class="mob-logo-w1">தினத்</span><span class="mob-logo-w2">துளிர்</span>
     </a>
   </div>
@@ -521,6 +523,8 @@ try {
     <div class="masthead-center">
       <a href="<?= $baseUrl ?>/public/" class="vel-logo-link">
         <div class="vel-brand-wrap">
+          <!-- Placeholder logo mark — swap for the real logo image at launch -->
+          <div class="logo-icon-ph" aria-hidden="true">த</div>
           <div>
             <div class="vel-logo"><span class="vel-word1">தினத்</span><span class="vel-word2">துளிர்</span></div>
             <div class="vel-tagline">அரசியல் பழகு &nbsp;·&nbsp; அறம் செய்</div>
@@ -650,6 +654,8 @@ try {
     <span class="ftr-sep">|</span>
     <a href="<?= $baseUrl ?>/public/contact">Contact</a>
     <span class="ftr-sep">|</span>
+    <a href="<?= $baseUrl ?>/public/our-team">Our Team</a>
+    <span class="ftr-sep">|</span>
     <a href="<?= $baseUrl ?>/public/ownership">Publisher</a>
     <span class="ftr-sep">|</span>
     <a href="<?= $baseUrl ?>/public/editorial-policy">Editorial Policy</a>
@@ -723,8 +729,8 @@ try {
       </div>
     </a>
     <?php else: ?>
-    <a href="<?= $baseUrl ?>/public/join-us" class="mob-nav-item mob-nav-google-wrap" style="text-decoration:none">
-      <div class="mob-nav-google-fab" aria-label="நிருபர் ஆக">📰</div>
+    <a href="<?= $baseUrl ?>/public/citizen-reporter" class="mob-nav-item mob-nav-google-wrap" style="text-decoration:none">
+      <div class="mob-nav-google-fab" aria-label="செய்தி பதிவிடு">📰</div>
     </a>
     <?php endif; ?>
     <div class="mob-nav-item" data-action="open-rate-sheet">
@@ -1246,8 +1252,8 @@ function closeRateSheet() {
     <span>சுயவிவரம்</span>
   </a>
   <?php else: ?>
-  <a href="<?= $r ?>/join-us" class="float-reporter-btn" aria-label="Join Us">
-    📰 <span>நிருபர் ஆக</span>
+  <a href="<?= $r ?>/citizen-reporter" class="float-reporter-btn" aria-label="Post News">
+    📰 <span>செய்தி பதிவிடு</span>
   </a>
   <?php endif; ?>
 <?php endif; ?>

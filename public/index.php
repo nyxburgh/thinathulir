@@ -84,6 +84,9 @@ spl_autoload_register(function (string $class): void {
 // ── SESSION ──────────────────────────────────────
 \App\Core\Session::start();
 
+// ── SCHEDULED PUBLISHING (fallback for missing OS cron) ──
+\App\Core\Scheduler::runIfDue();
+
 // ── ROUTE ────────────────────────────────────────
 $router = new \App\Core\Router();
 $router->load();

@@ -50,11 +50,65 @@ class BusinessAdController extends Controller
         ],$this->layout());
     }
 
+    private function normalizePhone(string $phone): string
+    {
+        $digits = preg_replace('/\D/', '', $phone);
+        // Only strip a leading "91" country code when it's actually a 12-digit
+        // 91+10digit number — a plain 10-digit number that happens to start
+        // with "91" (e.g. 9123456789) must NOT be truncated to 8 digits.
+        if (strlen($digits) === 12 && str_starts_with($digits, '91')) {
+            $digits = substr($digits, 2);
+        }
+        return $digits;
+    }
+
+    private function validateContact(string $phone, string $email, int $excludeId = 0): array
+    {
+        $errors = [];
+        if ($phone !== '' && !preg_match('/^[6-9]\d{9}$/', $this->normalizePhone($phone))) {
+            $errors['contact_phone'] = 'சரியான 10-இலக்க மொபைல் எண்ணை உள்ளிடவும்.';
+        } elseif ($phone !== '' && $this->ads->phoneExists($phone, $excludeId)) {
+            $errors['contact_phone'] = 'இந்த மொபைல் எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது.';
+        }
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['contact_email'] = 'சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்.';
+        } elseif ($email !== '' && $this->ads->emailExists($email, $excludeId)) {
+            $errors['contact_email'] = 'இந்த மின்னஞ்சல் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது.';
+        }
+        return $errors;
+    }
+
+    // GET — AJAX field-level duplicate check for contact_phone / contact_email
+    public function checkField(): void
+    {
+        $field     = $this->get('field', '');
+        $value     = trim($this->get('value', ''));
+        $excludeId = (int)$this->get('exclude_id', 0);
+        if (!in_array($field, ['contact_phone', 'contact_email'], true) || $value === '') {
+            $this->json(['exists' => false]);
+        }
+        $exists = $field === 'contact_phone'
+            ? $this->ads->phoneExists($value, $excludeId)
+            : $this->ads->emailExists($value, $excludeId);
+        $this->json(['exists' => $exists]);
+    }
+
     public function store(): void
     {
         CSRF::validate();
-        $name = Helper::sanitize($this->post('business_name',''));
-        if (!$name) { $this->flash('danger','Business name is required.'); $this->redirect($this->base().'/create'); }
+        $name  = Helper::sanitize($this->post('business_name',''));
+        $person = Helper::sanitize($this->post('contact_person',''));
+        $phone  = trim($this->post('contact_phone',''));
+        $email  = trim($this->post('contact_email',''));
+
+        $errors = [];
+        if (!$name)   $errors['business_name']   = 'நிறுவனத்தின் பெயர் அவசியம்.';
+        if (!$person) $errors['contact_person']  = 'தொடர்பு நபர் பெயர் அவசியம்.';
+        if (!$phone)  $errors['contact_phone']   = 'மொபைல் எண் அவசியம்.';
+        if (!(int)$this->post('package_id',0)) $errors['package_id'] = 'தொகுப்பை தேர்ந்தெடுக்கவும்.';
+        $errors = array_merge($errors, $this->validateContact($phone, $email));
+
+        if ($errors) { $this->backWithErrors($this->base().'/create', $errors); }
 
         $pkgId = (int)$this->post('package_id',0);
         $pkg   = $pkgId ? $this->pkgs->find($pkgId) : null;
@@ -145,6 +199,16 @@ class BusinessAdController extends Controller
         CSRF::validate();
         $ad = $this->ads->find((int)$id);
         if (!$ad) { $this->flash('danger','Not found.'); $this->redirect($this->base()); }
+
+        $name  = Helper::sanitize($this->post('business_name',''));
+        $phone = trim($this->post('contact_phone',''));
+        $email = trim($this->post('contact_email',''));
+
+        $errors = [];
+        if (!$name) $errors['business_name'] = 'நிறுவனத்தின் பெயர் அவசியம்.';
+        $errors = array_merge($errors, $this->validateContact($phone, $email, (int)$id));
+
+        if ($errors) { $this->backWithErrors($this->base().'/edit/'.$id, $errors); }
 
         $pkgId = (int)$this->post('package_id',0) ?: null;
         $pkg   = $pkgId ? $this->pkgs->find($pkgId) : null;

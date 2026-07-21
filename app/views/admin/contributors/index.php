@@ -67,7 +67,7 @@
               <?= $c['is_active'] ? 'Active' : 'Pending' ?>
             </span>
           </td>
-          <td class="text-muted small"><?= $c['last_login'] ? Helper::timeAgo($c['last_login']) : 'Never' ?></td>
+          <td class="text-muted small"><?= !empty($c['last_login']) ? Helper::timeAgo($c['last_login']) : 'Never' ?></td>
           <td>
             <a href="<?= $r ?>/admin/contributors/show/<?= $c['id'] ?>" class="btn btn-sm btn-outline-primary" title="View articles">
               <i class="bi bi-eye"></i>

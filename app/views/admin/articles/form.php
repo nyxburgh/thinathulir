@@ -1,6 +1,11 @@
 <?php use App\Core\{Helper, Auth, CSRF};
 $isAdmin = Auth::role()==='admin';
 $backUrl = $isAdmin ? BASE_URL.'/public/admin/articles' : BASE_URL.'/public/portal/all-articles';
+$old    = $old    ?? [];
+$errors = $errors ?? [];
+// Repopulate the form with whatever was submitted before a validation error,
+// so the reporter doesn't lose a half-written article.
+if ($old) { $article = array_merge($article, $old); }
 // Prefill from Photo News
 if (!empty($_prefill['title'] ?? '')) {
     $article['title'] = ($article['title'] ?? '') ?: ($_prefill['title'] ?? '');
@@ -49,7 +54,7 @@ $additionalCatId = (int)($article['additional_category_id'] ?? 0);
   </div>
 </div>
 
-<form method="POST" action="<?= $action ?>" id="articleForm" enctype="multipart/form-data">
+<form method="POST" action="<?= $action ?>" id="articleForm" enctype="multipart/form-data" data-validate novalidate>
 <?= CSRF::field() ?>
 <?php if (!empty($importId)): ?>
 <input type="hidden" name="import_id" value="<?= (int)$importId ?>">
@@ -67,9 +72,9 @@ $additionalCatId = (int)($article['additional_category_id'] ?? 0);
 
         <!-- Category + Subcategory -->
         <div class="row g-2 mb-3">
-          <div class="col-6">
+          <div class="col-6 fv-field">
             <label class="af-label">Category <span class="af-req">*</span></label>
-            <select name="parent_category_id" id="parentCatSelect" class="af-select">
+            <select name="parent_category_id" id="parentCatSelect" class="af-select <?= !empty($errors['category_id']) ? 'is-invalid' : '' ?>">
               <option value="">— Select —</option>
               <?php foreach ($parentCats as $cat): ?>
               <option value="<?= $cat['id'] ?>"
@@ -79,7 +84,8 @@ $additionalCatId = (int)($article['additional_category_id'] ?? 0);
               </option>
               <?php endforeach; ?>
             </select>
-            <input type="hidden" name="category_id" id="finalCategoryId" value="<?= $currentCatId ?: '' ?>">
+            <input type="hidden" name="category_id" id="finalCategoryId" required value="<?= $currentCatId ?: '' ?>">
+            <?php if (!empty($errors['category_id'])): ?><div class="fv-error"><?= Helper::e($errors['category_id']) ?></div><?php endif; ?>
           </div>
           <div class="col-6" id="subcatWrap" style="<?= empty($childMap[$selectedParent]) ? 'display:none' : '' ?>">
             <label class="af-label">Subcategory</label>
@@ -139,11 +145,12 @@ $additionalCatId = (int)($article['additional_category_id'] ?? 0);
         </div>
 
         <!-- Title + Slug -->
-        <div class="mb-3">
+        <div class="mb-3 fv-field">
           <label class="af-label">Article Title <span class="af-req">*</span></label>
-          <input type="text" name="title" id="titleInput" class="af-input af-input-title"
+          <input type="text" name="title" id="titleInput" class="af-input af-input-title <?= !empty($errors['title']) ? 'is-invalid' : '' ?>"
                  placeholder="Enter headline in Tamil or English…"
                  value="<?= Helper::e($article['title'] ?? '') ?>" required>
+          <?php if (!empty($errors['title'])): ?><div class="fv-error"><?= Helper::e($errors['title']) ?></div><?php endif; ?>
           <div class="af-slug-group mt-2">
             <span class="af-slug-prefix">/article/</span>
             <input type="text" name="slug" id="slugInput" class="af-slug-input"
@@ -153,7 +160,7 @@ $additionalCatId = (int)($article['additional_category_id'] ?? 0);
         </div>
 
         <!-- Content Editor -->
-        <div class="mb-3">
+        <div class="mb-3 fv-field">
           <label class="af-label">Article Content <span class="af-req">*</span></label>
           <div class="af-editor-wrap">
             <div class="af-toolbar art-toolbar">
@@ -166,8 +173,9 @@ $additionalCatId = (int)($article['additional_category_id'] ?? 0);
               <span class="af-toolbar-sep"></span>
               <button type="button" id="insertLinkBtn" title="Insert link">🔗 Link</button>
             </div>
-            <textarea id="content" name="content" class="af-textarea af-textarea-content"><?= htmlspecialchars($article['content'] ?? '') ?></textarea>
+            <textarea id="content" name="content" class="af-textarea af-textarea-content <?= !empty($errors['content']) ? 'is-invalid' : '' ?>" required><?= htmlspecialchars($article['content'] ?? '') ?></textarea>
           </div>
+          <?php if (!empty($errors['content'])): ?><div class="fv-error"><?= Helper::e($errors['content']) ?></div><?php endif; ?>
         </div>
 
         <!-- Featured Image -->
@@ -307,6 +315,13 @@ $additionalCatId = (int)($article['additional_category_id'] ?? 0);
           <input type="datetime-local" name="scheduled_at" class="af-input"
                  value="<?= !empty($article['scheduled_at']) ? date('Y-m-d\TH:i', strtotime($article['scheduled_at'])) : '' ?>">
         </div>
+        <?php if ($isEdit && Auth::can('publish_articles')): ?>
+        <div id="publishedAtWrap" style="<?= ($article['status']??'')==='published' ? '' : 'display:none' ?>" class="mb-2">
+          <label class="af-label">Published At <small class="af-hint">edit to change display time</small></label>
+          <input type="datetime-local" name="published_at" class="af-input"
+                 value="<?= !empty($article['published_at']) ? date('Y-m-d\TH:i', strtotime($article['published_at'])) : '' ?>">
+        </div>
+        <?php endif; ?>
         <!-- Push notification option -->
         <?php if (in_array(\App\Core\Auth::role(), ['admin','chief_editor'])): ?>
         <div class="mb-3 p-3 rounded" style="background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25)">
@@ -381,3 +396,4 @@ window.ArticleFormConfig = {
 };
 </script>
 <script src="<?= ASSET_URL ?>/public/assets/js/article-form.js"></script>
+<script src="<?= ASSET_URL ?>/public/assets/js/form-validate.js"></script>

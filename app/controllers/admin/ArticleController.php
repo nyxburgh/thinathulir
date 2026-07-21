@@ -125,11 +125,22 @@ class ArticleController extends Controller
         ], $this->layout());
     }
 
+    private function validateArticlePost(): array
+    {
+        $errors = [];
+        if (trim($this->post('title', '')) === '') $errors['title'] = 'தலைப்பு அவசியம்.';
+        if (!(int)$this->post('category_id', 0)) $errors['category_id'] = 'பிரிவை தேர்ந்தெடுக்கவும்.';
+        if (trim(strip_tags($this->post('content', ''))) === '') $errors['content'] = 'உள்ளடக்கம் அவசியம்.';
+        return $errors;
+    }
+
     public function store(): void
     {
         CSRF::validate();
+        $errors = $this->validateArticlePost();
+        if ($errors) { $this->backWithErrors($this->portalBase().'/create', $errors); }
+
         $data = $this->buildArticleData();
-        if (empty($data['category_id'])) { $this->flash('danger','Please select a category.'); $this->redirect($this->portalBase().'/create'); }
         $id = $this->articles->store($data);
 
         // Optional additional category (ignored if same as main category)
@@ -216,6 +227,9 @@ class ArticleController extends Controller
             $this->flash('success', 'Edit submitted to Chief Editor for approval.');
             $this->redirect('/portal/articles');
         }
+
+        $errors = $this->validateArticlePost();
+        if ($errors) { $this->backWithErrors($this->portalBase().'/edit/'.$id, $errors); }
 
         $data = $this->buildArticleData($article);
 
@@ -374,6 +388,11 @@ class ArticleController extends Controller
             $publishedAt = Helper::now();
         } elseif (!empty($existing['published_at'])) {
             $publishedAt = $existing['published_at'];
+        }
+        // Allow publishers to manually correct the displayed publish time
+        $publishedAtInput = trim($this->post('published_at', ''));
+        if ($status === 'published' && $publishedAtInput !== '' && Auth::can('publish_articles')) {
+            $publishedAt = date('Y-m-d H:i:s', strtotime($publishedAtInput));
         }
 
         $scheduledAt = $status === 'scheduled' ? $this->post('scheduled_at') : null;

@@ -24,7 +24,12 @@ if (file_exists($envFile)) {
 }
 
 spl_autoload_register(function (string $class): void {
-    $file = APP_PATH . '/' . str_replace(['App\\', '\\'], ['', '/'], $class) . '.php';
+    $relative = substr($class, strlen('App\\'));
+    $segments = explode('\\', $relative);
+    $filename = array_pop($segments);
+    $dirParts = array_map('strtolower', $segments);
+    $dirParts[] = $filename;
+    $file = APP_PATH . '/' . implode('/', $dirParts) . '.php';
     if (file_exists($file)) require_once $file;
 });
 

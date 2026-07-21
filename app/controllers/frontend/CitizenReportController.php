@@ -95,6 +95,7 @@ class CitizenReportController extends Controller
             } catch (\Exception $e) {}
 
             $this->flash('success', 'உங்கள் செய்தி பெறப்பட்டது. ஆசிரியர் குழு விரைவில் ஆய்வு செய்யும். நன்றி!');
+            $this->redirect('/citizen-reporter/history');
         } catch (\Exception $e) {
             error_log("Citizen Report Error: " . $e->getMessage());
             $this->flash('danger', 'பிழை: ' . $e->getMessage());

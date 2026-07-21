@@ -43,6 +43,7 @@ class UserController extends Controller
             'districts' => (new LocationModel())->allDistricts(),
             'categories'=> (new CategoryModel())->topLevel(),
             'perms'     => [],
+            'permOverrides' => [],
             'isEdit'    => false,
         ], $this->layout());
     }
@@ -65,6 +66,10 @@ class UserController extends Controller
             'assigned_district_id'  => (int)$this->post('assigned_district_id',0) ?: null,
             'assigned_category_ids' => $this->post('assigned_category_ids','') ?: null,
             'auto_approve'          => (int)(bool)$this->post('auto_approve',0),
+            'designation'           => Helper::sanitize($this->post('designation','')) ?: null,
+            'id_no'                 => trim($this->post('id_no','')) ?: null,
+            'dob'                   => trim($this->post('dob','')) ?: null,
+            'phone'                 => trim($this->post('phone','')) ?: null,
         ]);
         $this->savePermissions((int)$id);
         $this->flash('success','User created.');
@@ -82,6 +87,7 @@ class UserController extends Controller
             'districts'  => (new LocationModel())->allDistricts(),
             'categories' => (new CategoryModel())->topLevel(),
             'perms'      => $this->users->getPermissions((int)$id),
+            'permOverrides' => $this->users->getPermissionOverrides((int)$id),
             'isEdit'     => true,
         ], $this->layout());
     }
@@ -98,6 +104,12 @@ class UserController extends Controller
             'assigned_category_ids' => $this->post('assigned_category_ids','') ?: null,
             'auto_approve'          => (int)(bool)$this->post('auto_approve',0),
         ];
+        if ($this->post('_basic_info', '')) {
+            $data['designation'] = Helper::sanitize($this->post('designation','')) ?: null;
+            $data['id_no']       = trim($this->post('id_no','')) ?: null;
+            $data['dob']         = trim($this->post('dob','')) ?: null;
+            $data['phone']       = trim($this->post('phone','')) ?: null;
+        }
         if ($pass = $this->post('password','')) {
             $data['password'] = password_hash($pass, PASSWORD_BCRYPT);
         }
@@ -105,6 +117,32 @@ class UserController extends Controller
         $this->savePermissions((int)$id);
         $this->flash('success','User updated.');
         $this->redirect('/admin/users');
+    }
+
+    /** Standalone photo upload — separate endpoint so it doesn't get
+     *  clobbered by the other partial-form submits on this page. */
+    public function uploadPhoto(string $id): void
+    {
+        CSRF::validate();
+        if (!empty($_FILES['photo']['tmp_name'])) {
+            if (!$this->users->uploadPhoto((int)$id, $_FILES['photo'])) {
+                $this->flash('danger','Photo upload failed — check file type/size.');
+                $this->redirect('/admin/users/edit/'.$id);
+            }
+        }
+        $this->flash('success','Photo updated.');
+        $this->redirect('/admin/users/edit/'.$id);
+    }
+
+    /** Standalone permission-override save — same reasoning as uploadPhoto(). */
+    public function savePermissionOverrides(string $id): void
+    {
+        CSRF::validate();
+        $grants  = (array)$this->post('perm_grant', []);
+        $revokes = (array)$this->post('perm_revoke', []);
+        $this->users->savePermissionOverrides((int)$id, $grants, $revokes);
+        $this->flash('success','Permissions updated.');
+        $this->redirect('/admin/users/edit/'.$id);
     }
 
     public function delete(string $id): void

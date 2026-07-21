@@ -53,7 +53,7 @@ class ReaderProfileController extends Controller
         $row = $reader->fetch(\PDO::FETCH_ASSOC);
         \App\Core\Session::set('reader', $row);
 
-        Helper::redirect('/reader/profile');
+        Helper::redirect('/citizen-reporter/history');
     }
     public function index(): void
     {

@@ -18,6 +18,33 @@ class BusinessAdModel extends Model
         return $this->insert($data);
     }
 
+    // ── Duplicate checks (used by store/update validation + AJAX check) ──
+
+    // Compares the last 10 digits only, so "+91 98765 43210", "98765-43210"
+    // and "9876543210" are all recognised as the same number regardless of
+    // how each row happened to be typed in.
+    public function phoneExists(string $phone, int $excludeId = 0): bool
+    {
+        $needle = substr(preg_replace('/\D/', '', $phone), -10);
+        if ($needle === '') return false;
+        $rows = $this->fetchAll(
+            "SELECT id, contact_phone FROM tn_business_ads WHERE contact_phone IS NOT NULL AND contact_phone != ''"
+        );
+        foreach ($rows as $row) {
+            if ($excludeId && (int)$row['id'] === $excludeId) continue;
+            if (substr(preg_replace('/\D/', '', $row['contact_phone']), -10) === $needle) return true;
+        }
+        return false;
+    }
+
+    public function emailExists(string $email, int $excludeId = 0): bool
+    {
+        $sql = "SELECT COUNT(*) FROM tn_business_ads WHERE LOWER(contact_email) = LOWER(?)";
+        $params = [$email];
+        if ($excludeId) { $sql .= " AND id != ?"; $params[] = $excludeId; }
+        return (int)$this->fetchColumn($sql, $params) > 0;
+    }
+
     // ── Upload images (max 5) ────────────────────────────────
 
     public function uploadImage(int $adId, array $file, string $linkUrl = '', string $altText = '', string $slotType = ''): bool
@@ -512,24 +539,6 @@ class BusinessAdModel extends Model
         }
     }
 
-    /** Get default fallback image path for a slot type */
-    public function getDefaultImage(string $type): string
-    {
-        $defaults = ['square'=>'/uploads/vaqua.jpeg','horizontal'=>'/uploads/vah.png','vertical'=>'/uploads/vaqua.jpeg'];
-        try {
-            try {
-                $row = $this->fetchOne("SELECT ad_code FROM tn_ad_slots WHERE type = ? LIMIT 1", [$type]);
-            } catch (\Exception $e) {
-                $row = $this->fetchOne("SELECT ad_code FROM tn_ad_slots WHERE slug LIKE ? OR name LIKE ? LIMIT 1", ['%'.$type.'%','%'.$type.'%']);
-            }
-            if (!empty($row['ad_code'])) {
-                $v = trim($row['ad_code']);
-                if ($v[0] === '/' || str_starts_with($v, 'http')) return $v;
-            }
-        } catch (\Exception $e) {}
-        return $defaults[$type] ?? '/uploads/vaqua.jpeg';
-    }
-
     /** Get active approved ads for rotation — up to 5 images per ad */
     public function activeForRotation(string $slotType, ?int $categoryId = null, ?int $districtId = null): array
     {
@@ -615,10 +624,24 @@ class BusinessAdModel extends Model
         $filtered = array_values(array_filter($ads, fn($a) => $a['priority'] === $topPriority));
 
         if (empty($filtered)) {
-            $default = $this->getDefaultImage($slotType);
-            return [['ad_id'=>0,'business_name'=>'Advertisement','website_url'=>'#',
-                     'display_type'=>'global','priority'=>1,
-                     'images'=>[['src'=>$default,'alt'=>'Advertisement','link'=>'#','category_id'=>0]]]];
+            // No paid business ads active for this slot — fall back to the
+            // company's own house ads (already sized for every slot type).
+            try {
+                $companyAds = (new \App\Models\CompanyAdModel())->activeBySlot($slotType);
+            } catch (\Exception $e) {
+                $companyAds = [];
+            }
+            if (!empty($companyAds)) {
+                return array_map(fn($row) => [
+                    'ad_id'        => 0,
+                    'business_name'=> 'Advertisement',
+                    'website_url'  => '#',
+                    'display_type' => 'global',
+                    'priority'     => 1,
+                    'images'       => [['src'=>$row['filepath'],'alt'=>$row['alt_text'] ?: 'Advertisement','link'=>'#','category_id'=>0]],
+                ], $companyAds);
+            }
+            return [];
         }
 
         return $filtered;

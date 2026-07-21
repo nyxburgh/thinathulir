@@ -51,7 +51,7 @@
             </div>
             <?php endif; ?>
           </td>
-          <td class="text-muted small"><?= Helper::timeAgo($a['created_at']) ?></td>
+          <td class="text-muted small"><?= Helper::formatDate($a['created_at']) ?></td>
           <td>
             <?php if ($a['status'] === 'published'): ?>
             <a href="<?= $r ?>/article/<?= Helper::e($a['slug']) ?>" target="_blank" class="btn btn-sm btn-outline-secondary" title="View live">

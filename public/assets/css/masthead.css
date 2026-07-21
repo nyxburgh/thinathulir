@@ -111,8 +111,15 @@
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 32px; font-weight: 900; line-height: 1;
 }
-.vel-word1 { color: #C0001A; padding-right: 4px; }
-.vel-word2 { color: #fff; background: #C0001A; padding: 2px 10px 4px; border-radius: 4px; }
+.vel-word1 { color: #0F2557; padding-right: 4px; }
+.vel-word2 { color: #fff; background: #0F2557; padding: 2px 10px 4px; border-radius: 4px; }
+/* Placeholder logo mark — swap this <div> for the real logo <img> at launch */
+.logo-icon-ph {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, #0F2557, #1B3A7A);
+  color: #fff; display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'Noto Sans Tamil', sans-serif; font-weight: 900; font-size: 20px;
+}
 .vel-tagline {
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 11px; font-weight: 600; color: #9A9890;
@@ -211,8 +218,8 @@
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 16px; border-bottom: 2px solid #C0001A; flex-shrink: 0;
 }
-.mob-logo-w1 { font-family:'Noto Sans Tamil',sans-serif; font-weight:900; color:#C0001A; }
-.mob-logo-w2 { font-family:'Noto Sans Tamil',sans-serif; font-weight:900; color:#fff; background:#C0001A; padding:1px 6px; border-radius:3px; margin-left:2px; }
+.mob-logo-w1 { font-family:'Noto Sans Tamil',sans-serif; font-weight:900; color:#0F2557; }
+.mob-logo-w2 { font-family:'Noto Sans Tamil',sans-serif; font-weight:900; color:#fff; background:#0F2557; padding:1px 6px; border-radius:3px; margin-left:2px; }
 .mob-drawer-close {
   width: 32px; height: 32px; border-radius: 50%;
   background: #F0EFE9; border: none; font-size: 16px;
@@ -305,7 +312,7 @@
     text-align: center;
     margin-bottom: 2px;
   }
-  .mob-topbar-logo { text-decoration: none; }
+  .mob-topbar-logo { text-decoration: none; display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
 
   /* Mobile weather badge */
   .mob-weather-badge {
@@ -356,8 +363,9 @@
     from { opacity: 0; transform: scale(.9); }
     to   { opacity: 1; transform: scale(1); }
   }
-  .mob-logo-w1 { font-family:'Noto Sans Tamil',sans-serif; font-weight:900; color:#C0001A; font-size:20px; }
-  .mob-logo-w2 { font-family:'Noto Sans Tamil',sans-serif; font-weight:900; color:#fff; background:#C0001A; padding:1px 6px; border-radius:3px; margin-left:2px; font-size:20px; }
+  .mob-logo-w1 { font-family:'Noto Sans Tamil',sans-serif; font-weight:900; color:#0F2557; font-size:20px; }
+  .mob-logo-w2 { font-family:'Noto Sans Tamil',sans-serif; font-weight:900; color:#fff; background:#0F2557; padding:1px 6px; border-radius:3px; margin-left:2px; font-size:20px; }
+  .mob-topbar-logo-icon { width: 28px; height: 28px; border-radius: 8px; font-size: 16px; }
   /* Row 2: Reg number + date */
   .mob-topbar-meta-row { display:flex; gap:8px; align-items:center; justify-content:center; width:100%; margin-bottom:4px; }
   .mob-topbar-reg  { font-size:9px; color:#9A9890; white-space:nowrap; }

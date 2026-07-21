@@ -189,6 +189,7 @@ return [
     ['POST', '/portal/media/upload',           'admin\MediaController@upload'],
     ['POST', '/portal/media/delete/{id}',      'admin\MediaController@delete'],
     ['GET',  '/portal/ads',                    'admin\BusinessAdController@index'],
+    ['GET',  '/portal/ads/check-field',        'admin\BusinessAdController@checkField'],
     ['GET',  '/portal/ads/create',             'admin\BusinessAdController@create'],
     ['POST', '/portal/ads/create',             'admin\BusinessAdController@store'],
     ['GET',  '/portal/ads/show/{id}',          'admin\BusinessAdController@show'],
@@ -247,6 +248,8 @@ return [
     /* ── USER BLOCK / BADGE ── */
     ['POST', '/admin/users/block/{id}',          'admin\UserController@block'],
     ['POST', '/admin/users/unblock/{id}',        'admin\UserController@unblock'],
+    ['POST', '/admin/users/photo/{id}',          'admin\UserController@uploadPhoto'],
+    ['POST', '/admin/users/permissions/{id}',    'admin\UserController@savePermissionOverrides'],
     ['POST', '/admin/users/badge/assign/{id}',   'admin\UserController@assignBadge'],
     ['POST', '/admin/users/badge/remove/{id}',   'admin\UserController@removeBadge'],
     ['POST', '/admin/articles/approve-edit/{id}','admin\UserController@approveEdit'],
@@ -388,6 +391,8 @@ return [
     ['GET',  '/s/{code}',   'frontend\ShortUrlController@redirect'],
     ['GET', '/about',           'frontend\TrustPageController@about'],
     ['GET', '/contact',         'frontend\TrustPageController@contact'],
+    ['GET', '/our-team',        'frontend\TeamController@index'],
+    ['GET', '/our-team/{id}',   'frontend\TeamController@show'],
     ['GET', '/privacy',         'frontend\TrustPageController@privacy'],
     ['GET', '/terms',           'frontend\TrustPageController@terms'],
     ['GET', '/editorial-policy','frontend\TrustPageController@editorial'],
@@ -434,6 +439,7 @@ return [
     ['POST', '/portal/my-ads/{id}/submit-news',                    'admin\AdOwnerController@submitNews'],
     // Business Ads — new module
     ['GET',  '/admin/business-ads',                   'admin\BusinessAdController@index'],
+    ['GET',  '/admin/business-ads/check-field',        'admin\BusinessAdController@checkField'],
     ['GET',  '/admin/business-ads/create',             'admin\BusinessAdController@create'],
     ['POST', '/admin/business-ads/store',              'admin\BusinessAdController@store'],
     ['GET',  '/admin/business-ads/show/{id}',          'admin\BusinessAdController@show'],
@@ -493,8 +499,6 @@ return [
     /* ── RATES ── */
     ['GET', '/api/ads/track-view/{id}',  'admin\AdSlotController@trackView'],
     ['GET', '/api/ads/track-click/{id}', 'admin\AdSlotController@trackClick'],
-    ['GET',  '/admin/ad-defaults',           'admin\AdSlotController@defaults'],
-    ['POST', '/admin/ad-defaults/upload',     'admin\AdSlotController@uploadDefault'],
     ['GET',  '/api/ads/{type}',               'admin\AdSlotController@serve'],
 
     // Company (house) ads — chief editor only, shown on /ad/{id} pages
@@ -508,6 +512,21 @@ return [
     ['POST', '/portal/company-ads/delete/{id}', 'admin\CompanyAdController@delete'],
     ['GET',  '/admin/rates',                'admin\RateController@index'],
     ['POST', '/admin/rates/update',         'admin\RateController@store'],
+
+    /* ── SUB ADMIN PANEL (role: sub_admin — Import URL, Approvals, Rate Cards only) ── */
+    ['GET',  '/panel/dashboard',                'panel\DashboardController@index'],
+    ['GET',  '/panel/import',                   'panel\ImportController@index'],
+    ['POST', '/panel/import/fetch',             'panel\ImportController@fetch'],
+    ['POST', '/panel/import/discard/{id}',      'panel\ImportController@discard'],
+    ['GET',  '/panel/approvals/news',           'panel\ApprovalController@news'],
+    ['POST', '/panel/approvals/news/{id}/approve', 'panel\ApprovalController@approveNews'],
+    ['POST', '/panel/approvals/news/{id}/reject',  'panel\ApprovalController@rejectNews'],
+    ['GET',  '/panel/approvals/ads',            'panel\ApprovalController@ads'],
+    ['POST', '/panel/approvals/ads/{id}/approve', 'panel\ApprovalController@approveAd'],
+    ['POST', '/panel/approvals/ads/{id}/reject',  'panel\ApprovalController@rejectAd'],
+    ['GET',  '/panel/rates',                    'panel\RateController@index'],
+    ['POST', '/panel/rates/update',             'panel\RateController@store'],
+
     /* District API */
     ['GET',  '/api/district/detect', 'frontend\DistrictController@detect'],
     ['POST', '/api/district/set',    'frontend\DistrictController@set'],

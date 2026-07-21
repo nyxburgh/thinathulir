@@ -152,9 +152,6 @@ if (window.innerWidth < 1024 && document.cookie.indexOf("admin_mobile_ok") < 0) 
     <a href="<?= $routeBase ?>/admin/ad-slots" class="tn-nav-item <?= isActive('/admin/ad-slots', $current) ?>">
       <i class="bi bi-layout-three-columns"></i> Ad Slots
     </a>
-    <a href="<?= $routeBase ?>/admin/ad-defaults" class="tn-nav-item <?= isActive('/admin/ad-defaults', $current) ?>">
-      <i class="bi bi-image"></i> Default Images
-    </a>
     <a href="<?= $routeBase ?>/admin/company-ads" class="tn-nav-item <?= isActive('/admin/company-ads', $current) ?>">
       <i class="bi bi-building"></i> Company Ads
     </a>

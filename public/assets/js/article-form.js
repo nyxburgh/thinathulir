@@ -78,8 +78,10 @@
   /* ── Scheduled date toggle ── */
   var statusSelect = document.getElementById('statusSelect');
   var schedWrap     = document.getElementById('scheduledAtWrap');
+  var pubAtWrap     = document.getElementById('publishedAtWrap');
   statusSelect?.addEventListener('change', function () {
     schedWrap.style.display = this.value === 'scheduled' ? 'block' : 'none';
+    if (pubAtWrap) pubAtWrap.style.display = this.value === 'published' ? 'block' : 'none';
   });
   if (statusSelect?.value === 'scheduled') schedWrap.style.display = 'block';
 

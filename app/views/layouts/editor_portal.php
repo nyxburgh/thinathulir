@@ -176,6 +176,17 @@ try {
         } catch (\Exception $e) {}
         ?>
       </a>
+      <?php if (\App\Core\Auth::can('manage_articles')): ?>
+      <a href="<?= $r ?>/portal/citizen-reports" class="ep-nav-item <?= epActive('/portal/citizen-reports',$current) ?>">
+        <i class="bi bi-person-raised-hand"></i> Citizen Reports
+        <?php
+        try {
+            $cr = (new \App\Models\CitizenReportModel())->pendingCount();
+            if ($cr > 0): ?><span class="ep-badge ep-badge-warn"><?= $cr ?></span><?php endif;
+        } catch (\Exception $e) {}
+        ?>
+      </a>
+      <?php endif; ?>
 
       <div class="ep-nav-label">Insights</div>
       <a href="<?= $r ?>/portal/analytics" class="ep-nav-item <?= epActive('/portal/analytics',$current) ?>">

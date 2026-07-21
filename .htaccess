@@ -1,6 +1,6 @@
 Options -Indexes
 RewriteEngine On
-RewriteBase /
+RewriteBase /thinathulir/
 
 # Block sensitive directories
 RewriteRule ^(\.env|storage|app|config|cron)(/|$) - [F,L]

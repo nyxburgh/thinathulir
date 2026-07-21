@@ -84,6 +84,12 @@ class UserAuthController extends Controller
         $user = $this->users->findByEmail($email);
 
         if (!$user || !password_verify($password, $user['password'])) {
+            if ($this->users->isBlockedByEmail($email)) {
+                Session::delete('login_pending_email');
+                Session::flash('alert_type', 'danger');
+                Session::flash('alert_msg',  'உங்கள் கணக்கு முடக்கப்பட்டுள்ளது. நிர்வாகியை தொடர்பு கொள்ளவும். (Your account has been blocked. Contact the administrator.)');
+                $this->redirect('/login');
+            }
             Session::flash('alert_type', 'danger');
             Session::flash('alert_msg',  'Invalid email or password.');
             $this->redirect('/login');
@@ -129,6 +135,11 @@ class UserAuthController extends Controller
             || !hash_equals($user['remember_token'], hash('sha256', $token))
         ) {
             $this->clearRememberCookie($userId);
+            if (!$user && $this->users->isBlockedById($userId)) {
+                Session::flash('alert_type', 'danger');
+                Session::flash('alert_msg',  'உங்கள் கணக்கு முடக்கப்பட்டுள்ளது. நிர்வாகியை தொடர்பு கொள்ளவும். (Your account has been blocked. Contact the administrator.)');
+                $this->redirect('/login');
+            }
             Session::flash('alert_type', 'warning');
             Session::flash('alert_msg',  'Your device login has expired. Please sign in with your email and password.');
             $this->redirect('/login');

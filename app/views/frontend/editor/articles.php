@@ -53,7 +53,7 @@ $writeUrl   = $isContrib ? ($r.'/contribute/articles/create') : ($r.'/admin/arti
           <td><span class="portal-badge <?= $cls ?>"><?= ucfirst($a['status']) ?></span></td>
           <td style="font-size:13px;color:var(--portal-muted)"><?= number_format($a['view_count']) ?></td>
           <td style="font-size:12px;color:var(--portal-muted)"><?= !empty($a['word_count']) ? number_format($a['word_count']).' w' : '—' ?></td>
-          <td style="font-size:12px;color:var(--portal-muted)"><?= Helper::timeAgo($a['created_at']) ?></td>
+          <td style="font-size:12px;color:var(--portal-muted)"><?= Helper::formatDate($a['created_at']) ?></td>
           <td>
             <?php if ($canEdit): ?>
             <a href="<?= $editUrl ?>" class="btn btn-sm btn-outline-secondary">✏️ Edit</a>

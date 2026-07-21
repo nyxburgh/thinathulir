@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/d/xammp/mysql/bin/mysql.exe -h localhost -P 3306 -u root thinathulir)",
+      "Bash(grep -n \"CREATE TABLE \\\\`tn_citizen_reports\\\\`\" -A25 database/local_db.sql)"
+    ]
+  }
+}

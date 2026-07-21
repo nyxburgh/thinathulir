@@ -6,6 +6,56 @@ class Auth
     const EDITORIAL_ROLES = ['chief_editor','editor','district_editor','category_editor','reporter','senior_reporter','staff_reporter'];
     const EDITOR_ROLES    = ['chief_editor','editor','district_editor','category_editor'];
 
+    /**
+     * Catalog of permission slugs actually checked via requireCan()/Auth::can()
+     * across the app (the live $matrix keys below), grouped for the admin
+     * per-user override UI. Keep in sync with $matrix.
+     */
+    const PERMISSION_CATALOG = [
+        'Articles' => [
+            'manage_articles'   => 'Manage all articles',
+            'edit_all_articles' => 'Edit any article',
+            'create_articles'   => 'Create articles',
+            'approve_articles'  => 'Approve articles',
+            'publish_articles'  => 'Publish articles',
+            'escalate_articles' => 'Escalate articles to chief editor',
+            'approve_escalated' => 'Approve escalated articles',
+            'view_own_articles' => 'View own articles',
+            'set_auto_approve'  => 'Grant auto-approve to others',
+            'assign_reporters'  => 'Assign reporters to editors',
+        ],
+        'Ads' => [
+            'manage_ads'         => 'Manage ad slots/config',
+            'create_ad'          => 'Create ads',
+            'manage_own_ads'     => 'Manage own ads',
+            'approve_ad'         => 'Approve/reject ads',
+            'confirm_ad_payment' => 'Confirm ad payments',
+            'manage_packages'    => 'Manage ad packages',
+            'manage_rates'       => 'Manage live rates',
+        ],
+        'Content' => [
+            'manage_categories'   => 'Manage categories',
+            'manage_tags'         => 'Manage tags',
+            'manage_locations'    => 'Manage districts/locations',
+            'manage_media'        => 'Manage media library',
+            'manage_widgets'      => 'Manage sidebar widgets',
+            'manage_live_blog'    => 'Manage live blog',
+            'manage_premium'      => 'Manage premium content',
+            'manage_special_cats' => 'Manage special categories',
+            'manage_polls'        => 'Manage polls',
+            'manage_rss'          => 'Manage RSS import',
+            'manage_contributors' => 'Manage contributors',
+        ],
+        'System' => [
+            'manage_users'    => 'Create/edit users',
+            'manage_settings' => 'Manage site settings',
+            'manage_youtube'  => 'Manage YouTube import',
+            'send_push'       => 'Send push notifications',
+            'view_analytics'  => 'View analytics',
+            'promote_user'    => 'Promote user roles',
+        ],
+    ];
+
     public static function check(): bool   { return Session::has('user_id'); }
     public static function user(): ?array  { return self::check() ? Session::get('user') : null; }
     public static function id(): ?int      { return Session::get('user_id'); }
@@ -24,6 +74,25 @@ class Auth
     {
         $role = self::role();
         if (!$role) return false;
+
+        // Per-user overrides win over everything below (cached per request)
+        static $overrides = null;
+        if ($overrides === null) {
+            $overrides = [];
+            try {
+                $uid = self::id();
+                if ($uid) {
+                    $stmt = Database::getInstance()->prepare(
+                        "SELECT permission_slug, effect FROM tn_user_permission_overrides WHERE user_id = ?"
+                    );
+                    $stmt->execute([$uid]);
+                    foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                        $overrides[$row['permission_slug']] = $row['effect'];
+                    }
+                }
+            } catch (\Exception $e) {}
+        }
+        if (isset($overrides[$permission])) return $overrides[$permission] === 'grant';
 
         // Try DB-backed permissions (cached per request)
         static $dbPerms = null;

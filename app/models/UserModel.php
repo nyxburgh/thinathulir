@@ -219,4 +219,144 @@ class UserModel extends Model
             [$id]
         );
     }
+
+    /** Email match ignoring active/blocked status — used only to tell a
+     *  wrong password apart from a blocked account at login time. */
+    public function isBlockedByEmail(string $email): bool
+    {
+        return (bool)$this->fetchColumn(
+            "SELECT is_blocked FROM tn_users WHERE email = ?", [$email]
+        );
+    }
+
+    public function isBlockedById(int $id): bool
+    {
+        return (bool)$this->fetchColumn(
+            "SELECT is_blocked FROM tn_users WHERE id = ?", [$id]
+        );
+    }
+
+    // ── PER-USER PERMISSION OVERRIDES ──────────────────────────
+
+    public function getPermissionOverrides(int $userId): array
+    {
+        try {
+            return $this->fetchAll(
+                "SELECT permission_slug, effect FROM tn_user_permission_overrides WHERE user_id = ?",
+                [$userId]
+            );
+        } catch (\Exception $e) { return []; }
+    }
+
+    public function savePermissionOverrides(int $userId, array $grants, array $revokes): void
+    {
+        try {
+            $this->db->prepare("DELETE FROM tn_user_permission_overrides WHERE user_id = ?")
+                ->execute([$userId]);
+
+            $stmt = $this->db->prepare(
+                "INSERT INTO tn_user_permission_overrides (user_id, permission_slug, effect) VALUES (?,?,?)"
+            );
+            foreach ($grants as $slug) $stmt->execute([$userId, $slug, 'grant']);
+            foreach ($revokes as $slug) {
+                if (!in_array($slug, $grants, true)) $stmt->execute([$userId, $slug, 'revoke']);
+            }
+        } catch (\Exception $e) {}
+    }
+
+    // ── STAFF PHOTO (team/ID card) ─────────────────────────────
+
+    public function uploadPhoto(int $userId, array $file): bool
+    {
+        $cfg     = require CONFIG_PATH . '/app.php';
+        $allowed = $cfg['upload']['allowed'];
+        $maxSize = $cfg['upload']['max_size'];
+
+        if (!in_array($file['type'], $allowed) || $file['size'] > $maxSize) return false;
+
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) return false;
+
+        $dir = dirname(__DIR__, 2) . '/public/uploads/staff/';
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+
+        $filename = 'staff_' . $userId . '_' . uniqid() . '.' . $ext;
+        $path     = $dir . $filename;
+        if (!move_uploaded_file($file['tmp_name'], $path)) return false;
+
+        $this->resizeSquare($path);
+
+        $old = $this->fetchColumn("SELECT avatar FROM tn_users WHERE id = ?", [$userId]);
+        $this->query("UPDATE tn_users SET avatar = ? WHERE id = ?", ['/uploads/staff/' . $filename, $userId]);
+
+        if ($old && str_starts_with($old, '/uploads/staff/')) {
+            $oldPath = dirname(__DIR__, 2) . '/public' . $old;
+            if (is_file($oldPath)) @unlink($oldPath);
+        }
+        return true;
+    }
+
+    /** Cover-crop to a fixed square — ID-card headshot size. */
+    private function resizeSquare(string $path, int $size = 500): void
+    {
+        if (!function_exists('imagecreatetruecolor')) return;
+
+        $info = @getimagesize($path);
+        if (!$info) return;
+        [$srcW, $srcH, $type] = $info;
+
+        $src = match ($type) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($path),
+            IMAGETYPE_PNG  => @imagecreatefrompng($path),
+            IMAGETYPE_GIF  => @imagecreatefromgif($path),
+            IMAGETYPE_WEBP => @imagecreatefromwebp($path),
+            default        => null,
+        };
+        if (!$src) return;
+
+        $cropSize = min($srcW, $srcH);
+        $srcX     = (int)round(($srcW - $cropSize) / 2);
+        $srcY     = (int)round(($srcH - $cropSize) / 2);
+
+        $final = imagecreatetruecolor($size, $size);
+        imagecopyresampled($final, $src, 0, 0, $srcX, $srcY, $size, $size, $cropSize, $cropSize);
+
+        match ($type) {
+            IMAGETYPE_PNG  => imagepng($final, $path, 8),
+            IMAGETYPE_GIF  => imagegif($final, $path),
+            IMAGETYPE_WEBP => imagewebp($final, $path, 85),
+            default        => imagejpeg($final, $path, 85),
+        };
+
+        imagedestroy($src);
+        imagedestroy($final);
+    }
+
+    // ── PUBLIC "OUR TEAM" VERIFICATION PAGE ────────────────────
+
+    public function activeTeamMembers(): array
+    {
+        $roles = array_merge(['admin'], \App\Core\Auth::EDITORIAL_ROLES);
+        $in    = implode(',', array_fill(0, count($roles), '?'));
+        return $this->fetchAll(
+            "SELECT u.id, u.name, u.avatar, u.designation, u.phone, r.name AS role_name, r.slug AS role_slug
+             FROM tn_users u JOIN tn_roles r ON r.id = u.role_id
+             WHERE u.is_active = 1 AND u.is_blocked = 0 AND r.slug IN ($in)
+             ORDER BY r.sort_order ASC, u.name ASC",
+            $roles
+        );
+    }
+
+    public function findTeamMember(int $id): array|false
+    {
+        $roles = array_merge(['admin'], \App\Core\Auth::EDITORIAL_ROLES);
+        $in    = implode(',', array_fill(0, count($roles), '?'));
+        return $this->fetchOne(
+            "SELECT u.id, u.name, u.avatar, u.designation, u.id_no, u.phone, u.dob,
+                    r.name AS role_name, r.slug AS role_slug
+             FROM tn_users u JOIN tn_roles r ON r.id = u.role_id
+             WHERE u.id = ? AND u.is_active = 1 AND u.is_blocked = 0 AND r.slug IN ($in)",
+            array_merge([$id], $roles)
+        );
+    }
 }

@@ -425,3 +425,16 @@
 .tn-media-info { padding: 4px 6px 6px; background: #f9f9f9; }
 .tn-media-name { font-size: 10px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tn-media-meta { font-size: 10px; color: #9A9890; }
+
+/* ── Client-side validation (form-validate.js) ── */
+.af-input.is-invalid, .af-select.is-invalid, .af-textarea.is-invalid {
+  border-color: #C0001A;
+  box-shadow: 0 0 0 3px rgba(192,0,26,.1);
+}
+.fv-error {
+  color: #C0001A;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+.fv-checking { opacity: .7; }

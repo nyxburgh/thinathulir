@@ -5,7 +5,11 @@ abstract class Controller
 {
     protected function view(string $view, array $data = [], string $layout = 'admin'): void
     {
+        $old    = Session::getFlash('form_old', []);
+        $errors = Session::getFlash('form_errors', []);
         extract($data);
+        $old     = $old ?? [];
+        $errors  = $errors ?? [];
         $csrf    = CSRF::token();
         $auth    = Auth::user();
         $r       = defined('ASSET_URL') ? rtrim(ASSET_URL, '/') . '/public' : '/public';
@@ -67,7 +71,7 @@ abstract class Controller
     {
         if (!Auth::check()) {
             $uri = $_SERVER['REQUEST_URI'] ?? '';
-            $isAdminUrl = (strpos($uri, '/admin/') !== false);
+            $isAdminUrl = (strpos($uri, '/admin/') !== false || strpos($uri, '/panel/') !== false);
             Helper::redirect($isAdminUrl ? '/admin/login' : '/login');
         }
         if (!in_array(Auth::role(), $roles)) {
@@ -81,7 +85,7 @@ abstract class Controller
     {
         if (!Auth::check()) {
             $uri = $_SERVER['REQUEST_URI'] ?? '';
-            $isAdminUrl = (strpos($uri, '/admin/') !== false);
+            $isAdminUrl = (strpos($uri, '/admin/') !== false || strpos($uri, '/panel/') !== false);
             Helper::redirect($isAdminUrl ? '/admin/login' : '/login');
         }
         if (!Auth::can($permission)) {
@@ -100,6 +104,18 @@ abstract class Controller
     {
         Session::flash('alert_type', $type);
         Session::flash('alert_msg',  $message);
+    }
+
+    /**
+     * Validation failed — flash field errors + submitted values, then redirect
+     * back to the form so the user doesn't have to retype everything.
+     */
+    protected function backWithErrors(string $url, array $errors, ?array $old = null): void
+    {
+        Session::flash('form_errors', $errors);
+        Session::flash('form_old', $old ?? $_POST);
+        $this->flash('danger', 'கீழே உள்ள பிழைகளை சரிசெய்யவும்.');
+        $this->redirect($url);
     }
 
     public function middleware(): void {}

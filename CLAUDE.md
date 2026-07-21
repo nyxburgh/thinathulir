@@ -2,6 +2,15 @@
 
 Tamil-language news/media web app on a custom PHP MVC framework (no Composer/external framework). Multi-role editorial CMS with articles, live blogs, e-paper archive, plus a two-tier advertising system.
 
+## `.htaccess` files — local vs. production
+
+There are two independent pairs of `.htaccess` files; never cross-copy them:
+
+- **Local (XAMPP) — live, in use**: repo-root `.htaccess` + `public/.htaccess`. App is served from the `/thinathulir/` subfolder under htdocs, so `RewriteBase` is `/thinathulir/` (root) and `/thinathulir/public/` (public) accordingly.
+- **Production — staged for manual upload, not deployed yet**: `server/.htaccess` (→ upload to domain root) + `server/public/.htaccess` (→ upload to the server's `public/` folder). App will sit at the domain root there, so `RewriteBase` is `/` and `/public/`. The user (nyxburgh) uploads these manually at launch — do not deploy or push them.
+- Both pairs' `public/.htaccess` carry a rule that hides `/public/` from the browser address bar for **frontend pages only** (redirects based on `%{THE_REQUEST}`, skipping `admin`/`portal`/`contribute`/`login`/`logout` paths, which keep showing `/public/`).
+- When editing routing/rewrite behavior, update **both** pairs in parallel and keep the local one working against `http://localhost/thinathulir/` (don't break local dev while editing the production copy, and vice versa).
+
 ## Architecture
 
 - Entry point: `public/index.php`. Manually parses `.env` (no phpdotenv), defines `ROOT_PATH`/`APP_PATH`/`CONFIG_PATH`/`VIEW_PATH`/`STORAGE_PATH`, sets `BASE_URL`/`ASSET_URL` from `APP_URL`. Root `.htaccess` forwards to `public/`.

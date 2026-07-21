@@ -1,7 +1,7 @@
 <?php
 /**
  * Scheduled Publishing Cron
- * Schedule: */5 * * * * php /path/to/cron/scheduled_publish.php
+ * Schedule: every 5 minutes — php /path/to/cron/scheduled_publish.php
  */
 
 define('ROOT_PATH',   dirname(__DIR__));
@@ -23,7 +23,12 @@ if (file_exists($envFile)) {
 }
 
 spl_autoload_register(function (string $class): void {
-    $file = APP_PATH . '/' . str_replace(['App\\', '\\'], ['', '/'], $class) . '.php';
+    $relative = substr($class, strlen('App\\'));
+    $segments = explode('\\', $relative);
+    $filename = array_pop($segments);
+    $dirParts = array_map('strtolower', $segments);
+    $dirParts[] = $filename;
+    $file = APP_PATH . '/' . implode('/', $dirParts) . '.php';
     if (file_exists($file)) require_once $file;
 });
 
@@ -41,6 +46,7 @@ $due = $db->query(
 $published = 0;
 
 foreach ($due as $article) {
+    // Core action — must succeed, this is the whole point of the cron
     $db->prepare(
         "UPDATE tn_articles
          SET status = 'published',
@@ -49,29 +55,44 @@ foreach ($due as $article) {
          WHERE id = ?"
     )->execute([$article['id']]);
 
-    // Log activity
-    $db->prepare(
-        "INSERT INTO tn_activity_log (action, entity, entity_id, description)
-         VALUES ('auto_publish', 'article', ?, ?)"
-    )->execute([$article['id'], "Auto-published: {$article['title']}"]);
-
     $published++;
+
+    // Everything below is auxiliary — a schema mismatch here should not
+    // stop the actual publish above from having happened (see CLAUDE.md
+    // note on live/local DB drift; production may be missing newer
+    // tables/columns that local dev already has).
+    try {
+        $db->prepare(
+            "INSERT INTO tn_activity_log (action, entity, entity_id, description)
+             VALUES ('auto_publish', 'article', ?, ?)"
+        )->execute([$article['id'], "Auto-published: {$article['title']}"]);
+    } catch (\PDOException $e) {
+        // tn_activity_log missing/different schema on this environment — skip
+    }
 }
 
 // Also expire breaking news past expiry time
-$db->query(
-    "UPDATE tn_articles
-     SET is_breaking = 0, breaking_expires_at = NULL
-     WHERE is_breaking = 1
-     AND breaking_expires_at IS NOT NULL
-     AND breaking_expires_at < NOW()"
-);
+try {
+    $db->query(
+        "UPDATE tn_articles
+         SET is_breaking = 0, breaking_expires_at = NULL
+         WHERE is_breaking = 1
+         AND breaking_expires_at IS NOT NULL
+         AND breaking_expires_at < NOW()"
+    );
+} catch (\PDOException $e) {
+    // breaking_expires_at column missing on this environment — skip
+}
 
 logCron($db, 'scheduled_publish', 'success', "Published {$published} scheduled articles", $published, $startTime);
 echo "Done. Published: {$published}\n";
 
 function logCron(\PDO $db, string $job, string $status, string $message, int $records, float $start): void {
     $ms = (int)((microtime(true) - $start) * 1000);
-    $db->prepare("INSERT INTO tn_cron_logs (job, status, message, records, duration_ms) VALUES (?,?,?,?,?)")
-       ->execute([$job, $status, $message, $records, $ms]);
+    try {
+        $db->prepare("INSERT INTO tn_cron_logs (job, status, message, records, duration_ms) VALUES (?,?,?,?,?)")
+           ->execute([$job, $status, $message, $records, $ms]);
+    } catch (\PDOException $e) {
+        // tn_cron_logs missing/different schema on this environment — skip
+    }
 }

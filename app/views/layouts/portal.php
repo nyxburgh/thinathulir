@@ -161,6 +161,13 @@ function pActive(string $p, string $c): string {
         <i class="bi bi-megaphone"></i><span>My Ads</span>
       </a>
       <?php endif; ?>
+
+      <?php if (\App\Core\Auth::can('manage_articles')): ?>
+      <a href="<?= $r ?>/portal/citizen-reports" class="portal-nav-link <?= pActive('/portal/citizen-reports',$current) ?>">
+        <i class="bi bi-person-raised-hand"></i><span>Citizen Reports</span>
+        <?php try { $cr=(new \App\Models\CitizenReportModel())->pendingCount(); if($cr>0): ?><em class="portal-nav-badge"><?= $cr > 9 ? '9+' : $cr ?></em><?php endif; } catch(\Exception $e) {} ?>
+      </a>
+      <?php endif; ?>
     </nav>
 
     <!-- Right actions -->
@@ -318,6 +325,13 @@ if ($alertType && $alertMsg):
   <a href="<?= $r ?>/portal/photo-news" class="portal-bottom-item <?= pActive('/photo-news',$current) ?>">
     <i class="bi bi-camera"></i> Photo News
   </a>
+
+  <?php if (\App\Core\Auth::can('manage_articles')): ?>
+  <a href="<?= $r ?>/portal/citizen-reports" class="portal-bottom-item">
+    <i class="bi bi-person-raised-hand"></i> Citizen Reports
+    <?php try { $cr=(new \App\Models\CitizenReportModel())->pendingCount(); if($cr>0): ?><span class="badge bg-danger ms-auto"><?= $cr > 9 ? '9+' : $cr ?></span><?php endif; } catch(\Exception $e) {} ?>
+  </a>
+  <?php endif; ?>
 
   <?php if ($canPush): ?>
   <a href="<?= $r ?>/admin/push" class="portal-bottom-item">
