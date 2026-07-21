@@ -113,7 +113,7 @@ class CitizenReportModel extends Model
                     a.slug AS article_slug, a.published_at
              FROM tn_citizen_reports r
              LEFT JOIN tn_categories c ON c.id = r.category_id
-             LEFT JOIN tn_articles a ON a.image_credit LIKE CONCAT('%',r.name,'%') AND a.status='published'
+             LEFT JOIN tn_articles a ON a.id = r.article_id AND a.status='published'
              WHERE r.ip_address = ?
              ORDER BY r.created_at DESC LIMIT ?",
             [$ip, $limit]

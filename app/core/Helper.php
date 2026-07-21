@@ -170,7 +170,7 @@ class Helper
         return $base . $path;
     }
 
-    public static function shareImageUrl(?string $path = null, string $fallback = '/uploads/vaqua.jpeg'): string
+    public static function shareImageUrl(?string $path = null, string $fallback = '/assets/img/thinathulir.png'): string
     {
         $candidate = trim((string)($path ?? ''));
         if ($candidate === '') {

@@ -53,13 +53,18 @@ class ArticleController extends Controller
         $settings      = new SettingModel();
         $siteName      = $settings->getValue('site_name', 'தமிழ் செய்தி');
 
-        // Districts that have published news — for the district switcher dropdown
+        // Districts that have published news under the Tamil Nadu category —
+        // matches CategoryController's own scoping, since selecting a district
+        // here navigates to /tamil-news/tamil-nadu?district={id}. Listing
+        // districts whose only published articles sit under a different
+        // category would send the reader to an empty results page.
         $districts = [];
         try {
             $districts = \App\Core\Database::getInstance()->query(
                 "SELECT DISTINCT d.id, d.name FROM tn_districts d
                  INNER JOIN tn_articles a ON a.district_id = d.id
-                 WHERE a.status='published'
+                 INNER JOIN tn_categories c ON c.id = a.category_id
+                 WHERE a.status='published' AND c.slug='tamil-nadu'
                  ORDER BY d.name"
             )->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Throwable $e) {}

@@ -43,7 +43,7 @@ $writeUrl    = $r . '/contribute/articles/create';
       <div class="portal-logo-icon" style="background:<?= $green ?>">✍️</div>
       <div>
         <div class="portal-logo-title">
-          <span style="color:#C0001A;font-family:'Noto Sans Tamil',sans-serif;font-weight:900">வேள்</span><span style="color:#fff;background:#C0001A;padding:0 5px;border-radius:3px;font-family:'Noto Sans Tamil',sans-serif;font-weight:900;margin-left:2px">சுடர்</span>
+          <span style="color:#C0001A;font-family:'Noto Sans Tamil',sans-serif;font-weight:900">தினத்</span><span style="color:#fff;background:#C0001A;padding:0 5px;border-radius:3px;font-family:'Noto Sans Tamil',sans-serif;font-weight:900;margin-left:2px">துளிர்</span>
         </div>
         <div class="portal-logo-sub" style="color:<?= $green ?>">Contributor</div>
       </div>

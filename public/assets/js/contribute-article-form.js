@@ -28,7 +28,7 @@
 
   /* ── Content toolbar ── */
   var contentArea = document.getElementById('content');
-  document.querySelectorAll('.art-toolbar [data-fmt]').forEach(function (btn) {
+  document.querySelectorAll('.af-toolbar [data-fmt]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var cmd = btn.dataset.fmt;
       var s = contentArea.selectionStart, e = contentArea.selectionEnd;
@@ -38,7 +38,7 @@
       contentArea.setRangeText(open + sel + close, s, e, 'end');
     });
   });
-  document.querySelectorAll('.art-toolbar [data-tag]').forEach(function (btn) {
+  document.querySelectorAll('.af-toolbar [data-tag]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var tag = btn.dataset.tag;
       var s = contentArea.selectionStart, e = contentArea.selectionEnd;

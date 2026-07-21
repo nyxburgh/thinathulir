@@ -207,9 +207,12 @@ function pnRender() {
   document.getElementById('pnShareTw').href = 'https://twitter.com/intent/tweet?text=' + shareText + '&url=' + shareLink;
   document.getElementById('pnShareTg').href = 'https://t.me/share/url?url=' + shareLink + '&text=' + shareText;
 
-  /* Download */
+  /* Download — keep the source file's real extension so the saved
+     file's name matches its actual format (jpg/png/webp) */
+  var extMatch = c.img.match(/\.([a-zA-Z0-9]+)(?:\?.*)?$/);
+  var ext = extMatch ? extMatch[1] : 'jpg';
   document.getElementById('pnDownload').href = c.img;
-  document.getElementById('pnDownload').download = 'thinathulir-photo-news.jpg';
+  document.getElementById('pnDownload').download = 'thinathulir-photo-news.' + ext;
 
   /* Nav buttons */
   document.getElementById('pnPrev').disabled = pnCurrent === 0;
@@ -245,16 +248,41 @@ document.getElementById('pnShareImg').addEventListener('click', async function (
 });
 
 /* Copy link */
+function pnShowCopyToast(msg) {
+  var toast = document.getElementById('pnCopyToast');
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(function () { toast.style.display = 'none'; }, 2000);
+}
+
+function pnFallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+
 document.getElementById('pnCopy').addEventListener('click', function () {
   var card = PN_CARDS[pnCurrent];
   var url = card?.articleUrl || card?.pageUrl || window.location.href;
   var text = card?.title ? card.title + '\n' + url : url;
-  navigator.clipboard?.writeText(text).then(function () {
-    var toast = document.getElementById('pnCopyToast');
-    toast.textContent = '✓ Link copied';
-    toast.style.display = 'block';
-    setTimeout(function () { toast.style.display = 'none'; }, 2000);
-  });
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () {
+      pnShowCopyToast('✓ Link copied');
+    }).catch(function () {
+      pnShowCopyToast(pnFallbackCopy(text) ? '✓ Link copied' : '✗ Copy failed');
+    });
+  } else {
+    pnShowCopyToast(pnFallbackCopy(text) ? '✓ Link copied' : '✗ Copy failed');
+  }
 });
 
 document.getElementById('pnClose').addEventListener('click', pnClose);

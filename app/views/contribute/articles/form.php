@@ -36,21 +36,23 @@
       <div class="portal-card mb-4">
         <div class="portal-card-header"><span><i class="bi bi-pencil-square me-2"></i>Article Content <span class="text-danger">*</span></span></div>
         <div class="portal-card-body p-0">
-          <div class="art-toolbar">
-            <button type="button" data-fmt="bold" title="Bold"><b>B</b></button>
-            <button type="button" data-fmt="italic" title="Italic"><i>I</i></button>
-            <button type="button" data-fmt="underline" title="Underline"><u>U</u></button>
-            <span class="sep"></span>
-            <button type="button" data-tag="h2" title="Heading">H2</button>
-            <button type="button" data-tag="h3" title="Sub-heading">H3</button>
-            <button type="button" data-tag="p" title="Paragraph">P</button>
-            <span class="sep"></span>
-            <button type="button" data-tag="blockquote" title="Quote">&#10078;</button>
-            <button type="button" id="insertUlBtn" title="Bullet List">&bull; List</button>
-            <span class="sep"></span>
-            <button type="button" id="insertLinkBtn" title="Link">&#128279;</button>
+          <div class="af-editor-wrap">
+            <div class="af-toolbar">
+              <button type="button" data-fmt="bold" title="Bold"><b>B</b></button>
+              <button type="button" data-fmt="italic" title="Italic"><i>I</i></button>
+              <button type="button" data-fmt="underline" title="Underline"><u>U</u></button>
+              <span class="af-toolbar-sep"></span>
+              <button type="button" data-tag="h2" title="Heading">H2</button>
+              <button type="button" data-tag="h3" title="Sub-heading">H3</button>
+              <button type="button" data-tag="p" title="Paragraph">P</button>
+              <span class="af-toolbar-sep"></span>
+              <button type="button" data-tag="blockquote" title="Quote">&#10078;</button>
+              <button type="button" id="insertUlBtn" title="Bullet List">&bull; List</button>
+              <span class="af-toolbar-sep"></span>
+              <button type="button" id="insertLinkBtn" title="Link">&#128279;</button>
+            </div>
+            <textarea id="content" name="content" class="form-control af-textarea-content"><?= htmlspecialchars($article['content'] ?? '') ?></textarea>
           </div>
-          <textarea id="content" name="content" class="form-control art-content-area"><?= htmlspecialchars($article['content'] ?? '') ?></textarea>
         </div>
       </div>
 

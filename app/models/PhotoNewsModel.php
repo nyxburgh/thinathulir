@@ -138,6 +138,42 @@ class PhotoNewsModel
         $this->db->prepare("UPDATE tn_photo_news SET image_path=? WHERE id=?")->execute([$path, $id]);
     }
 
+    // Overwrite the image on the article's linked entry after regenerating a
+    // share image. share_placement/is_auto_generated are optional columns
+    // (see database/migration_2026_07_21_share_images.sql) — degrade quietly
+    // if a given environment hasn't applied that migration yet.
+    public function updateGenerated(int $id, string $imagePath, string $placement): void
+    {
+        try {
+            $this->db->prepare(
+                "UPDATE tn_photo_news SET image_path=?, share_placement=?, is_auto_generated=1, updated_at=NOW() WHERE id=?"
+            )->execute([$imagePath, $placement, $id]);
+        } catch (\PDOException $e) {
+            $this->updateImage($id, $imagePath);
+        }
+    }
+
+    // Creates a new share-generated entry linked to an article, auto-approved
+    // (the roles allowed to generate share images already have blanket
+    // Photo News approve/publish rights).
+    public function storeGenerated(int $articleId, string $title, string $slug, string $imagePath, string $placement, ?int $createdBy): int
+    {
+        try {
+            $stmt = $this->db->prepare(
+                "INSERT INTO tn_photo_news (article_id, title, slug, image_path, share_placement, is_auto_generated, status, approval_status, created_by)
+                 VALUES (?, ?, ?, ?, ?, 1, 'published', 'approved', ?)"
+            );
+            $stmt->execute([$articleId, $title, $slug, $imagePath, $placement, $createdBy]);
+        } catch (\PDOException $e) {
+            $stmt = $this->db->prepare(
+                "INSERT INTO tn_photo_news (article_id, title, slug, image_path, status, approval_status, created_by)
+                 VALUES (?, ?, ?, ?, 'published', 'approved', ?)"
+            );
+            $stmt->execute([$articleId, $title, $slug, $imagePath, $createdBy]);
+        }
+        return (int)$this->db->lastInsertId();
+    }
+
     public function delete(int $id): void
     {
         $this->db->prepare("DELETE FROM tn_photo_news_tags WHERE photo_news_id=?")->execute([$id]);

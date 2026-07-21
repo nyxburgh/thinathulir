@@ -27,6 +27,68 @@ body.portal-body {
   min-height: 100vh;
 }
 
+/* ── CONTRIBUTOR AUTH (login/register) ───────────── */
+.contribute-auth-wrap {
+  min-height: calc(100vh - var(--portal-topbar-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.contribute-auth-box {
+  width: 100%;
+  max-width: 400px;
+  background: var(--portal-white);
+  border: 1px solid var(--portal-gray2);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.06);
+  padding: 32px;
+}
+.contribute-auth-logo {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* ── Google login button ── */
+.google-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  background: #fff;
+  border: 1.5px solid #dadce0;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #3c4043;
+  text-decoration: none;
+  transition: box-shadow .15s, background .15s;
+  margin-bottom: 16px;
+}
+.google-login-btn:hover {
+  box-shadow: 0 1px 6px rgba(0,0,0,.15);
+  background: #f8f9fa;
+  color: #3c4043;
+}
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 16px;
+  color: #9A9890;
+  font-size: 12px;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #E8E6E0;
+}
+
 /* ── TOPBAR ──────────────────────────────────────── */
 .portal-topbar {
   background: var(--portal-topbar);

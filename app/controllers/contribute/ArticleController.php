@@ -157,12 +157,17 @@ class ArticleController extends Controller
         }
         $seriesPart = $seriesId ? $seriesModel->nextPartNumber($seriesId) : null;
 
+        $categoryId = (int)($_POST['category_id'] ?? 0);
+        if (!in_array($categoryId, $this->assignedCatIds, true)) {
+            $categoryId = $this->assignedCatIds[0] ?? 1;
+        }
+
         return [
             'contributor_id' => $this->contributorId,
             'user_id'        => 1, // system user
             'series_id'      => $seriesId,
             'series_part'    => $seriesPart,
-            'category_id'    => (int)($_POST['category_id'] ?? $this->assignedCatIds[0] ?? 1),
+            'category_id'    => $categoryId,
             'title'          => $title,
             'slug'           => $slug,
             'excerpt'        => $_POST['excerpt'] ?? '' ?: Helper::excerpt($content),
@@ -171,8 +176,6 @@ class ArticleController extends Controller
             'youtube_url'    => $_POST['youtube_url'] ?? '' ?: null,
             'youtube_video_id' => $_POST['youtube_url'] ? Helper::youtubeId($_POST['youtube_url']) : null,
             'status'         => 'review', // always goes to review
-            'is_auto_imported' => 0,
-            'import_source'  => 'contributor',
             'read_time'      => Helper::readTime($content),
             'meta_title'     => $_POST['meta_title'] ?? '' ?: null,
             'meta_desc'      => $_POST['meta_desc']  ?? '' ?: null,

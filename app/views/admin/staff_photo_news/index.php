@@ -81,7 +81,7 @@
           <i class="bi bi-trash"></i> Del
         </button>
       </form>
-      <a href="<?= BASE_URL ?>/public/photo-news" target="_blank"
+      <a href="<?= $r ?>/photo-news?photo=<?= $item['id'] ?>" target="_blank"
          class="btn btn-xs btn-outline-info" title="View in site">
         <i class="bi bi-eye"></i> View
       </a>

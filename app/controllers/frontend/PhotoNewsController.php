@@ -38,16 +38,21 @@ class PhotoNewsController extends Controller
 
         // Deep link to a single photo (?photo=ID) — used when sharing one
         // photo individually, so the preview shows that photo, not the
-        // generic gallery card.
+        // generic gallery card. Looked up directly so it works regardless
+        // of which page the photo falls on.
         $photoId = (int)($_GET['photo'] ?? 0);
         if ($photoId) {
-            foreach ($cards as $c) {
-                if ((int)$c['id'] === $photoId) {
-                    $metaTitle = $c['title'] . ' | Photo News — Thinathulir';
-                    $ogImage   = Helper::shareImageUrl($c['image_path']);
-                    $canonical = $siteUrl . '/photo-news?photo=' . $photoId;
-                    break;
-                }
+            $photoStmt = $db->prepare(
+                "SELECT id, title, image_path FROM tn_photo_news
+                 WHERE id = ? AND status='published' AND approval_status='approved'
+                   AND image_path IS NOT NULL AND image_path != ''"
+            );
+            $photoStmt->execute([$photoId]);
+            $photo = $photoStmt->fetch(\PDO::FETCH_ASSOC);
+            if ($photo) {
+                $metaTitle = $photo['title'] . ' | Photo News — Thinathulir';
+                $ogImage   = Helper::shareImageUrl($photo['image_path']);
+                $canonical = $siteUrl . '/photo-news?photo=' . $photoId;
             }
         }
 

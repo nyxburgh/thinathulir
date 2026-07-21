@@ -402,8 +402,11 @@ class ArticleController extends Controller
         return [
             'user_id'          => $existing['user_id'] ?? Auth::id(),
             'category_id'      => (int)$this->post('category_id', 1),
+            // Default new articles to the reporter's assigned district when they
+            // don't pick one — but never override an explicit choice on edit
+            // (a district editor selecting "All Districts" must be able to clear it).
             'district_id'      => ((int)$this->post('district_id', 0)) ?: (
-                !empty(\App\Core\Auth::user()['assigned_district_id'])
+                empty($existing) && !empty(\App\Core\Auth::user()['assigned_district_id'])
                     ? (int)\App\Core\Auth::user()['assigned_district_id']
                     : null
             ),

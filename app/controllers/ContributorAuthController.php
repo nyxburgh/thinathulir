@@ -37,6 +37,8 @@ class ContributorAuthController extends Controller
             $this->redirect('/contribute/login');
         }
 
+        $model->updateLastLogin($contributor['id']);
+
         session_regenerate_id(true);
         Session::set('contributor_id', $contributor['id']);
         Session::set('contributor',    $contributor);
@@ -119,11 +121,17 @@ class ContributorAuthController extends Controller
         $base = rtrim($cfg['url'], '/');
         $uri  = $base . '/public/contribute/auth/callback';
 
-        $code = $_GET['code'] ?? '';
+        $code  = $_GET['code'] ?? '';
+        $state = $_GET['state'] ?? '';
         if (!$code) {
             $this->flash('danger', 'Google login failed — no code returned.');
             $this->redirect('/contribute/login');
         }
+        if (!$state || $state !== Session::get('contrib_oauth_state')) {
+            $this->flash('danger', 'Google login failed — invalid state.');
+            $this->redirect('/contribute/login');
+        }
+        Session::delete('contrib_oauth_state');
 
         $tokens  = \App\Core\GoogleOAuth::exchangeCode($code, $uri);
         $profile = $tokens ? \App\Core\GoogleOAuth::getProfile($tokens['access_token']) : null;
@@ -176,6 +184,8 @@ class ContributorAuthController extends Controller
                 $model->update($contributor['id'], ['google_id' => $profile['google_id']]);
             }
         } catch (\Exception $e) {}
+
+        $model->updateLastLogin($contributor['id']);
 
         session_regenerate_id(true);
         Session::set('contributor_id', $contributor['id']);

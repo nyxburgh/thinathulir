@@ -366,7 +366,59 @@ $r              = rtrim(ASSET_URL, '/') . '/public';
 /* Tamil date */
 $_days   = ['ஞாயிறு','திங்கள்','செவ்வாய்','புதன்','வியாழன்','வெள்ளி','சனி'];
 $_months = ['ஜனவரி','பிப்ரவரி','மார்ச்','ஏப்ரல்','மே','ஜூன்','ஜூலை','ஆகஸ்ட்','செப்டம்பர்','அக்டோபர்','நவம்பர்','டிசம்பர்'];
-$tamilDate = $_days[date('w')] . ', ' . date('d') . ' ' . $_months[(int)date('n')-1] . ' ' . date('Y');
+
+// Tamil (Vakya Panchangam) 60-year cycle name — Chithirai 1 (~14 Apr) starts a new Tamil year.
+// Epoch: 1987 Chithirai 1 = "பிரபவ" (cycle index 0).
+$_tamilYearNames = [
+    'பிரபவ','விபவ','சுக்ல','பிரமோதூத','பிரஜோத்பத்தி','ஆங்கீரச','ஸ்ரீமுக','பவ','யுவ','தாது',
+    'ஈஸ்வர','வெகுதானிய','பிரமாதி','விக்கிரம','விஷு','சித்திரபானு','சுபானு','தாரண','பார்த்திப','விய',
+    'சர்வசித்து','சர்வதாரி','விரோதி','விக்ருதி','கர','நந்தன','விஜய','ஜய','மன்மத','துன்முகி',
+    'ஹேவிளம்பி','விளம்பி','விகாரி','சார்வரி','பிலவ','சுபகிருது','சோபகிருது','குரோதி','விசுவாசுவ','பராபவ',
+    'பிலவங்க','கீலக','சௌமிய','சாதாரண','விரோதிகிருது','பரிதாபி','பிரமாதீச','ஆனந்த','ராட்சச','நள',
+    'பிங்கள','காளயுக்தி','சித்தார்த்தி','ரௌத்திரி','துன்மதி','துந்துபி','ருதிரோற்காரி','ரக்தாட்சி','குரோதன','அட்சய',
+];
+$_gregYear      = (int)date('Y');
+$_tamilNewYear  = mktime(0, 0, 0, 4, 14, $_gregYear);
+$_tamilCycleYear = time() >= $_tamilNewYear ? $_gregYear : $_gregYear - 1;
+$_tamilYearName = $_tamilYearNames[(($_tamilCycleYear - 1987) % 60 + 60) % 60];
+
+// Tamil solar calendar (fixed-date approximation) — 12 months, each starting on
+// the sun's ingress into the next zodiac sign. Chithirai starts the Tamil year (~14 Apr).
+$_tmY = $_tamilCycleYear;
+$_tamilMonthDefs = [
+    ['சித்திரை',   $_tmY,   4, 14],
+    ['வைகாசி',     $_tmY,   5, 15],
+    ['ஆனி',        $_tmY,   6, 15],
+    ['ஆடி',        $_tmY,   7, 17],
+    ['ஆவணி',       $_tmY,   8, 17],
+    ['புரட்டாசி',   $_tmY,   9, 17],
+    ['ஐப்பசி',      $_tmY,  10, 18],
+    ['கார்த்திகை',  $_tmY,  11, 16],
+    ['மார்கழி',     $_tmY,  12, 16],
+    ['தை',         $_tmY+1, 1, 14],
+    ['மாசி',        $_tmY+1, 2, 13],
+    ['பங்குனி',     $_tmY+1, 3, 15],
+    ['சித்திரை',   $_tmY+1, 4, 14], // next year's Chithirai — bounds Panguni's end
+];
+$_todayTs = mktime(0, 0, 0, (int)date('n'), (int)date('j'), (int)date('Y'));
+$_tamilMonthName = $_tamilMonthDefs[0][0];
+$_tamilDay = 1;
+for ($_i = 0; $_i < 12; $_i++) {
+    $_startTs = mktime(0, 0, 0, $_tamilMonthDefs[$_i][2], $_tamilMonthDefs[$_i][3], $_tamilMonthDefs[$_i][1]);
+    $_endTs   = mktime(0, 0, 0, $_tamilMonthDefs[$_i+1][2], $_tamilMonthDefs[$_i+1][3], $_tamilMonthDefs[$_i+1][1]);
+    if ($_todayTs >= $_startTs && $_todayTs < $_endTs) {
+        $_tamilMonthName = $_tamilMonthDefs[$_i][0];
+        $_tamilDay = (int)round(($_todayTs - $_startTs) / 86400) + 1;
+        break;
+    }
+}
+
+// Gregorian segment (day name + month in Tamil script) — this part should
+// switch with the language toggle, so it's rendered translate="yes" below.
+$gregDateText = $_days[date('w')] . ' | ' . date('d') . ' ' . $_months[(int)date('n')-1] . ' ' . date('Y');
+// Tamil panchangam segment — traditional calendar terms, kept untranslated always.
+$tamilCalText = $_tamilDay . ' ' . $_tamilMonthName . ' ' . $_tamilYearName . ' வருடம்';
+$tamilDate = $gregDateText . ' | ' . $tamilCalText;
 
 /* Ad slots — safe */
 $adSquare = $adHorizontal = null;
@@ -385,7 +437,7 @@ try {
 <!-- Minimal header for ad page -->
 <div style="background:#fff;border-bottom:1px solid #F0EFE9;padding:12px 16px;display:flex;align-items:center;justify-content:center;position:sticky;top:0;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,.06);border-bottom:2.5px solid #C0001A">
   <a href="<?= $baseUrl ?>/public" style="text-decoration:none;display:flex;align-items:center;gap:8px">
-    <span style="font-family:'Noto Sans Tamil',sans-serif;font-size:18px;font-weight:900;color:#C0001A;letter-spacing:-.5px">தினத்துளிர்</span>
+    <img src="<?= $r ?>/assets/img/thinathulir.png" alt="தினத்துளிர்" style="height:32px;width:auto;display:block">
   </a>
 </div>
 <?php else: ?>
@@ -449,7 +501,7 @@ try {
 <div class="nav-drawer-overlay" id="navDrawerOverlay" data-action="close-nav-drawer"></div>
 <div class="nav-drawer" id="navDrawer">
   <div class="nav-drawer-head">
-    <span style="font-family:'Noto Sans Tamil',sans-serif;font-weight:800;font-size:16px;color:#1A1A1A">தினத்துளிர்</span>
+    <img src="<?= $r ?>/assets/img/thinathulir.png" alt="தினத்துளிர்" style="height:24px;width:auto;display:block">
     <button data-action="close-nav-drawer" class="nav-drawer-close-btn" aria-label="Close navigation">✕</button>
   </div>
   <div class="nav-drawer-body">
@@ -482,13 +534,8 @@ try {
 <div class="mob-topbar notranslate" translate="no">
   <div class="mob-topbar-logo-row">
     <a href="<?= $baseUrl ?>/public/" class="mob-topbar-logo">
-      <!-- Placeholder logo mark — swap for the real logo image at launch -->
-      <span class="logo-icon-ph mob-topbar-logo-icon" aria-hidden="true">த</span>
-      <span class="mob-logo-w1">தினத்</span><span class="mob-logo-w2">துளிர்</span>
+      <img src="<?= $r ?>/assets/img/thinathulir.png" alt="தினத்துளிர்" style="height:68px;width:auto;display:block">
     </a>
-  </div>
-  <div class="mob-topbar-meta-row">
-    <span class="mob-topbar-date"><?= $tamilDate ?></span>
   </div>
   <div class="mob-topbar-lang-row">
     <div class="lang-switcher lang-switcher-mob notranslate" translate="no">
@@ -497,12 +544,13 @@ try {
       <button data-lang-btn="hi" class="lang-btn">हि</button>
     </div>
     <div class="mob-weather-badge" id="mobWeatherBadge">
+      <span class="mob-weather-icon">🌤️</span>
+      <span class="mob-weather-temp" id="mobWeatherBadgeTemp">—°C</span>
       <span class="mob-weather-city" id="mobWeatherBadgeCity"></span>
-      <span class="mob-weather-bottom">
-        <span class="mob-weather-icon">🌤️</span>
-        <span class="mob-weather-temp" id="mobWeatherBadgeTemp">—°C</span>
-      </span>
     </div>
+  </div>
+  <div class="mob-topbar-date-row">
+    <span class="mob-topbar-date"><span translate="yes"><?= $gregDateText ?></span> | <span class="notranslate" translate="no"><?= $tamilCalText ?></span></span>
   </div>
 </div>
 
@@ -522,14 +570,9 @@ try {
     </div>
     <div class="masthead-center">
       <a href="<?= $baseUrl ?>/public/" class="vel-logo-link">
-        <div class="vel-brand-wrap">
-          <!-- Placeholder logo mark — swap for the real logo image at launch -->
-          <div class="logo-icon-ph" aria-hidden="true">த</div>
-          <div>
-            <div class="vel-logo"><span class="vel-word1">தினத்</span><span class="vel-word2">துளிர்</span></div>
-            <div class="vel-tagline">அரசியல் பழகு &nbsp;·&nbsp; அறம் செய்</div>
-            <div class="masthead-sub-line"><?= $tamilDate ?> &nbsp;|&nbsp; <?= date('d F Y') ?></div>
-          </div>
+        <div class="vel-brand-wrap" style="flex-direction:column">
+          <img src="<?= $r ?>/assets/img/thinathulir.png" alt="தினத்துளிர்" style="height:84px;width:auto;display:block">
+          <div class="masthead-sub-line"><span translate="yes"><?= $gregDateText ?></span> | <span class="notranslate" translate="no"><?= $tamilCalText ?></span></div>
         </div>
       </a>
       <?php if (empty($noAds)): ?>
@@ -680,10 +723,6 @@ try {
     <span class="ftr-sep">|</span>
     <a href="<?= $baseUrl ?>/public/disclaimer">Disclaimer</a>
     <span class="ftr-sep">|</span>
-    <a href="<?= $baseUrl ?>/public/admin/login">Admin</a>
-    <span class="ftr-sep">|</span>
-    <a href="<?= $baseUrl ?>/public/contribute/login">Contribute</a>
-    <span class="ftr-sep">|</span>
     <span>👁 <?= number_format($_siteViews) ?> Views</span>
   </div>
 </footer>
@@ -729,7 +768,7 @@ try {
       </div>
     </a>
     <?php else: ?>
-    <a href="<?= $baseUrl ?>/public/citizen-reporter" class="mob-nav-item mob-nav-google-wrap" style="text-decoration:none">
+    <a href="<?= $baseUrl ?>/public/join-us" class="mob-nav-item mob-nav-google-wrap" style="text-decoration:none">
       <div class="mob-nav-google-fab" aria-label="செய்தி பதிவிடு">📰</div>
     </a>
     <?php endif; ?>
@@ -790,7 +829,7 @@ try {
 <!-- RIGHT DRAWER -->
 <div class="mob-drawer" id="mobDrawer">
   <div class="mob-drawer-header notranslate" translate="no">
-    <span><span class="mob-logo-w1" style="font-size:18px">தினத்</span><span class="mob-logo-w2" style="font-size:18px">துளிர்</span></span>
+    <img src="<?= $r ?>/assets/img/thinathulir.png" alt="தினத்துளிர்" style="height:22px;width:auto;display:block">
     <button class="mob-drawer-close" data-action="close-drawer" aria-label="Close menu">✕</button>
   </div>
   <div class="mob-drawer-body">
@@ -837,7 +876,7 @@ try {
   <div class="modal-box">
     <div class="modal-header">
       <button class="modal-close" data-action="close-modal" aria-label="Close">✕</button>
-      <div class="vel-logo" style="font-size:20px;justify-content:center"><span class="vel-word1">தினத்</span><span class="vel-word2">துளிர்</span></div>
+      <img src="<?= $r ?>/assets/img/thinathulir.png" alt="தினத்துளிர்" style="height:32px;width:auto;display:block;margin:0 auto">
       <div class="vel-tagline" style="color:#6B6A64;font-size:11px;text-align:center">அரசியல் பழகு &nbsp;·&nbsp; அறம் செய்</div>
     </div>
     <div class="modal-body">
@@ -1252,7 +1291,7 @@ function closeRateSheet() {
     <span>சுயவிவரம்</span>
   </a>
   <?php else: ?>
-  <a href="<?= $r ?>/citizen-reporter" class="float-reporter-btn" aria-label="Post News">
+  <a href="<?= $r ?>/join-us" class="float-reporter-btn" aria-label="Post News">
     📰 <span>செய்தி பதிவிடு</span>
   </a>
   <?php endif; ?>

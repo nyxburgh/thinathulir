@@ -89,6 +89,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  align-self: center;
 }
 .masthead-ad img,
 .masthead-ad a img {
@@ -126,7 +127,7 @@
   letter-spacing: .5px; margin-top: 4px;
 }
 .masthead-sub-line {
-  font-size: 10px; color: #9A9890;
+  font-size: 10px; color: #C0001A; font-weight: 600;
   font-family: 'Source Sans 3', sans-serif;
   margin-top: 5px; letter-spacing: .2px;
 }
@@ -306,54 +307,36 @@
     box-sizing: border-box;
     overflow: hidden;
   }
-  /* Row 1: Logo centered */
-  .mob-topbar-logo-row {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 2px;
-  }
+  /* Line 1: Logo centered */
+  .mob-topbar-logo-row { width: 100%; text-align: center; margin-bottom: 2px; }
   .mob-topbar-logo { text-decoration: none; display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
 
-  /* Mobile weather badge */
+  /* Mobile weather badge — single line, same height as the language switcher */
   .mob-weather-badge {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
     background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
     border: 1px solid rgba(3,105,161,.2);
     border-radius: 16px;
-    padding: 4px 10px;
+    padding: 5px 10px;
     animation: mob-weather-pulse 3s ease-in-out infinite;
   }
   .mob-weather-badge.loaded { animation: mob-weather-fadein .4s ease both; }
+  .mob-weather-icon { font-size: 12px; line-height: 1; }
+  .mob-weather-temp { font-size: 11px; font-weight: 800; color: #0369A1; line-height: 1; white-space: nowrap; }
   .mob-weather-city {
-    font-size: 9px;
-    font-weight: 800;
+    font-size: 10px;
+    font-weight: 600;
     color: #0369A1;
-    text-transform: uppercase;
-    letter-spacing: .3px;
     line-height: 1;
     max-width: 72px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-  .mob-weather-bottom {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-  .mob-weather-icon { font-size: 13px; line-height: 1; }
-  .mob-weather-temp { font-size: 12px; font-weight: 800; color: #0369A1; line-height: 1; }
-  .mob-weather-city {
-    font-size: 10px;
-    font-weight: 600;
-    color: #0369A1;
-    max-width: 80px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding-left: 4px;
+    border-left: 1px solid rgba(3,105,161,.25);
   }
   @keyframes mob-weather-pulse {
     0%, 100% { opacity: 1; }
@@ -366,11 +349,11 @@
   .mob-logo-w1 { font-family:'Noto Sans Tamil',sans-serif; font-weight:900; color:#0F2557; font-size:20px; }
   .mob-logo-w2 { font-family:'Noto Sans Tamil',sans-serif; font-weight:900; color:#fff; background:#0F2557; padding:1px 6px; border-radius:3px; margin-left:2px; font-size:20px; }
   .mob-topbar-logo-icon { width: 28px; height: 28px; border-radius: 8px; font-size: 16px; }
-  /* Row 2: Reg number + date */
-  .mob-topbar-meta-row { display:flex; gap:8px; align-items:center; justify-content:center; width:100%; margin-bottom:4px; }
   .mob-topbar-reg  { font-size:9px; color:#9A9890; white-space:nowrap; }
-  .mob-topbar-date { font-size:9px; color:#9A9890; white-space:nowrap; }
-  /* Row 3: Language switcher centered */
+  /* Line 3: date */
+  .mob-topbar-date-row { width:100%; text-align:center; }
+  .mob-topbar-date { font-size:9px; color:#C0001A; font-weight:600; white-space:nowrap; }
+  /* Line 2: language switcher + weather pill */
   .mob-topbar-lang-row { width:100%; display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; gap:8px; }
   .lang-switcher-mob { justify-content:flex-start; flex-shrink:0; }
   /* Row 4: Ad */
@@ -423,7 +406,7 @@
   .mob-float-ad      { display: none !important; }
   .nav               { display: block !important; }
   .masthead          { display: grid !important; grid-template-columns: 300px 1fr 300px !important; }
-  .masthead-ad       { width: 300px !important; height: 150px !important; }
+  .masthead-ad       { width: 300px !important; height: 150px !important; align-self: center !important; }
   .header            { position: relative !important; border-bottom: none !important; box-shadow: none !important; }
   .header-banner-ad  { display: block !important; }
 }

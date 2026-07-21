@@ -328,6 +328,12 @@ return [
     ['POST', '/admin/photo-news/approve/{id}',        'admin\StaffPhotoNewsController@approve'],
     ['POST', '/admin/photo-news/reject/{id}',         'admin\StaffPhotoNewsController@reject'],
 
+    // Social share image generator (staff_reporter/chief_editor/admin) — one linked Photo News entry per article
+    ['GET',  '/portal/share-image/create/{id}',       'admin\ShareImageController@create'],
+    ['POST', '/portal/share-image/generate/{id}',     'admin\ShareImageController@generate'],
+    ['GET',  '/admin/share-image/create/{id}',        'admin\ShareImageController@create'],
+    ['POST', '/admin/share-image/generate/{id}',      'admin\ShareImageController@generate'],
+
     /* Old Photo News card management (now replaced) */
     ['GET',  '/portal/photo-news',              'admin\PhotoNewsController@index'],
     ['POST', '/portal/photo-news/upload/{id}',  'admin\PhotoNewsController@upload'],

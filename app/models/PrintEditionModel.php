@@ -30,9 +30,9 @@ class PrintEditionModel extends Model
 
     public function editionArticles(int $editionId): array
     {
-        return $this->fetchAll(
+        $articles = $this->fetchAll(
             "SELECT a.id, a.title, a.slug, a.excerpt, a.published_at,
-                    a.view_count, a.word_count, a.content_type,
+                    a.view_count, a.content, a.content_type,
                     c.name AS category_name, c.name_tamil AS category_tamil,
                     m.filepath AS image_url,
                     u.name AS author_name,
@@ -46,6 +46,13 @@ class PrintEditionModel extends Model
              ORDER BY ea.sort_order ASC, ea.added_at ASC",
             [$editionId]
         );
+
+        foreach ($articles as &$article) {
+            $article['word_count'] = str_word_count(strip_tags($article['content'] ?? ''));
+            unset($article['content']);
+        }
+
+        return $articles;
     }
 
     public function addArticle(int $editionId, int $articleId): void

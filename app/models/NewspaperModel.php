@@ -92,6 +92,7 @@ class NewspaperModel extends Model
 
         $filename  = 'paper_' . $date . '_' . uniqid() . '.pdf';
         $uploadDir = dirname(__DIR__, 2) . '/public/uploads/newspapers/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
         $destPath  = $uploadDir . $filename;
 
         if (!move_uploaded_file($file['tmp_name'], $destPath)) return false;

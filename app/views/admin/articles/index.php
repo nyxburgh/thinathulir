@@ -1,6 +1,7 @@
 <?php use App\Core\{Helper, Auth, CSRF};
 $_artBase = Auth::role() === 'admin' ? '/admin/articles' : '/portal/all-articles';
 $_pnBase  = Auth::role() === 'admin' ? '/admin/photo-news' : '/portal/photo-news';
+$_siBase  = Auth::role() === 'admin' ? '/admin/share-image' : '/portal/share-image';
 ?>
 
 <div class="tn-page-header">
@@ -154,6 +155,11 @@ $_pnBase  = Auth::role() === 'admin' ? '/admin/photo-news' : '/portal/photo-news
             </a>
             <a href="<?= $r . $_pnBase ?>/connect-from-article/<?= $a['id'] ?>" class="btn btn-sm btn-outline-secondary" title="Connect existing Photo News">
               <i class="bi bi-link-45deg"></i>
+            </a>
+            <?php endif; ?>
+            <?php if (in_array(Auth::role(), ['admin','chief_editor','staff_reporter'])): ?>
+            <a href="<?= $r . $_siBase ?>/create/<?= $a['id'] ?>" class="btn btn-sm btn-outline-dark" title="Create Share Image">
+              <i class="bi bi-image"></i>
             </a>
             <?php endif; ?>
             <?php if (in_array(Auth::role(), ['admin','chief_editor'])): ?>

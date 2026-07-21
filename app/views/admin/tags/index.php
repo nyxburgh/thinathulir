@@ -21,6 +21,7 @@
     <?php endforeach; ?>
     </tbody>
   </table></div>
+  <?php $queryExtra = ''; include VIEW_PATH . '/partials/pagination.php'; ?>
 </div>
 <div class="modal fade" id="addTagModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
   <form action="<?= $r ?>/admin/tags/create" method="POST"><?= CSRF::field() ?>

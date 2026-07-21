@@ -108,9 +108,14 @@ class SeriesController extends Controller
         $allowedStatus = ['ongoing', 'completed'];
         $status = in_array($_POST['status'] ?? '', $allowedStatus, true) ? $_POST['status'] : 'ongoing';
 
+        $categoryId = (int)($_POST['category_id'] ?? 0);
+        if (!in_array($categoryId, $this->assignedCatIds, true)) {
+            $categoryId = $this->assignedCatIds[0] ?? 1;
+        }
+
         return [
             'contributor_id' => $this->contributorId,
-            'category_id'    => (int)($_POST['category_id'] ?? $this->assignedCatIds[0] ?? 1),
+            'category_id'    => $categoryId,
             'title'          => $title,
             'slug'           => $slug,
             'description'    => $_POST['description'] ?? '',
